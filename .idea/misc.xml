@@ -7,4 +7,9 @@
       </MavenGeneralSettings>
     </option>
   </component>
+  <component name="SwUserDefinedSpecifications">
+    <option name="specTypeByUrl">
+      <map />
+    </option>
+  </component>
 </project>

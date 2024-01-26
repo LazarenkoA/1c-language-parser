@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"unicode"
@@ -22,6 +24,8 @@ type Token struct {
 	srs      string
 	charSize int
 	position Position
+	literal  string
+	value    interface{}
 }
 
 const (
@@ -34,6 +38,7 @@ var (
 		"процедура":         Procedure,
 		"перем":             Var,
 		"конецпроцедуры":    EndProcedure,
+		"знач":              ValueParam,
 		"если":              If,
 		"тогда":             Then,
 		"иначеесли":         ElseIf,
@@ -48,9 +53,9 @@ var (
 		"прервать":          Break,
 		"продолжить":        Continue,
 		"попытка":           Try,
+		"новый":             New,
 		"исключение":        Catch,
 		"конецпопытки":      EndTry,
-		"массив":            Array,
 		"функция":           Function,
 		"конецфункции":      EndFunction,
 		"возврат":           Return,
@@ -62,6 +67,9 @@ var (
 		"неопределено":      Undefind,
 		"не":                Not,
 		"экспорт":           Export,
+		// "массив":            Array,
+		// "структура":         Struct,
+		// "соответствие":      Dictionary,
 	}
 
 	directives = map[string]int{
@@ -73,12 +81,33 @@ var (
 	}
 )
 
-func (t *Token) Next(srs string) (int, string, error) {
+func (t *Token) Next(srs string) (token int, err error) {
 	t.one.Do(func() {
 		t.srs = srs
 	})
 
+	token, t.literal, err = t.next()
+	switch token {
+	case Number:
+		t.value, err = strconv.ParseFloat(t.literal, 64)
+	//	t.value, _ = strconv.ParseInt(t.literal, 10, 64)
+	case String:
+		t.value = t.literal
+	case Undefind:
+		t.value = nil
+	case True:
+		t.value = true
+	case False:
+		t.value = false
+	}
+
+	return
+}
+
+func (t *Token) next() (int, string, error) {
 	t.skipSpace()
+	t.skipComment()
+	t.skipRegions()
 
 	switch let := t.currentLet(); {
 	case isLetter(let):
@@ -87,7 +116,7 @@ func (t *Token) Next(srs string) (int, string, error) {
 			return EOF, emptyLit, err
 		}
 
-		lowLit := strings.ToLower(literal)
+		lowLit := fastToLower(literal)
 		if tName, ok := tokens[lowLit]; ok {
 			return tName, literal, nil
 		} else {
@@ -100,13 +129,24 @@ func (t *Token) Next(srs string) (int, string, error) {
 			return Number, literal, nil
 		}
 	case let == '"':
-		literal, err := t.scanString('"')
+		literal, err := t.scanString(let)
 		if err != nil {
 			return EOF, emptyLit, err
 		}
 
 		return String, literal, nil
-	case let == '=' || let == '-' || let == '+' || let == '*' || let == '(' || let == ')' || let == '[' || let == ']' || let == ':' || let == ';' || let == ',' || let == '%':
+	case let == 0x27:
+		literal, err := t.scanString(let)
+		if err != nil {
+			return EOF, emptyLit, err
+		}
+
+		if !IsDigit(literal) {
+			return EOF, emptyLit, errors.New("Incorrect Date type constant")
+		}
+
+		return String, literal, nil
+	case let == '=' || let == '-' || let == '+' || let == '*' || let == '/' || let == '(' || let == '?' || let == ')' || let == '[' || let == ']' || let == ':' || let == ';' || let == '.' || let == ',' || let == '%':
 		t.nextPos()
 		return int(let), string(let), nil
 	case let == '<':
@@ -114,22 +154,29 @@ func (t *Token) Next(srs string) (int, string, error) {
 			t.nextPos()
 			t.nextPos()
 			return NeEq, "<>", nil
+		} else if t.nextLet() == '=' {
+			t.nextPos()
+			t.nextPos()
+			return Le, "<=", nil
 		} else {
+			t.nextPos()
 			return int(let), string(let), nil
 		}
 	case let == '>':
-		t.nextPos()
-		return int(let), string(let), nil
-	case let == '/':
-		if t.nextLet() == '/' {
-			for ch := t.currentLet(); ch != '\n' && ch != EOF; ch = t.currentLet() {
-				t.nextPos()
-			}
-			return EOL, emptyLit, nil
+		if t.nextLet() == '=' {
+			t.nextPos()
+			t.nextPos()
+			return Ge, ">=", nil
+		} else {
+			t.nextPos()
+			return int(let), string(let), nil
 		}
 
-		t.nextPos()
-		return int(let), string(let), nil
+	// case let == '#':
+	// literal, err := t.scanIdentifier()
+	// if err != nil {
+	// 	return EOF, emptyLit, err
+	// }
 	case let == '&':
 		t.nextPos()
 		pos := t.offset
@@ -139,7 +186,7 @@ func (t *Token) Next(srs string) (int, string, error) {
 			return EOF, emptyLit, err
 		}
 
-		lowLit := strings.ToLower("&" + literal)
+		lowLit := fastToLower("&" + literal)
 		if tName, ok := directives[lowLit]; ok {
 			return tName, "&" + literal, nil
 		} else {
@@ -151,9 +198,9 @@ func (t *Token) Next(srs string) (int, string, error) {
 		case EOF:
 			t.nextPos()
 			return EOF, emptyLit, nil
-		case '\n':
-			t.nextPos()
-			return int(let), string(let), nil
+		// case '\n':
+		// 	t.nextPos()
+		// 	return int(let), string(let), nil
 		default:
 			t.nextPos()
 			return int(let), string(let), fmt.Errorf(`syntax error %q`, string(let))
@@ -177,7 +224,7 @@ func (t *Token) scanIdentifier() (string, error) {
 	return string(ret), nil
 }
 
-func (t *Token) scanString(l rune) (string, error) {
+func (t *Token) scanString(end rune) (string, error) {
 	var ret []rune
 
 eos:
@@ -194,7 +241,15 @@ eos:
 			ret = append(append(ret, EOL), cl)
 		case cl == EOF:
 			return "", errors.New("unexpected EOF")
-		case cl == l:
+		case cl == end:
+			// пропускаем двойные "
+			if t.nextLet() == '"' {
+				t.nextPos()
+				ret = append(ret, '"', '"')
+				continue
+			}
+
+			t.nextPos()
 			break eos
 		default:
 			ret = append(ret, cl)
@@ -207,6 +262,37 @@ eos:
 func (t *Token) skipSpace() {
 	for isSpace(t.currentLet()) {
 		t.nextPos()
+	}
+}
+
+func (t *Token) skipComment() {
+	if t.currentLet() == '/' && t.nextLet() == '/' {
+		for ch := t.currentLet(); ch != EOL && ch != EOF; ch = t.currentLet() {
+			t.nextPos()
+		}
+		t.skipSpace()
+	} else {
+		return
+	}
+
+	// проверяем что на новой строке нет комментария, если есть, рекурсия
+	if t.currentLet() == '/' {
+		t.skipComment()
+	}
+}
+
+func (t *Token) skipRegions() {
+	// todo пока будут пропускаться и условия типа #Если Не ВебКлиент Тогда, потом надо будет доработать
+	if t.currentLet() == '#' {
+		for ch := t.currentLet(); ch != EOL && ch != EOF; ch = t.currentLet() {
+			t.nextPos()
+		}
+		t.skipSpace()
+	}
+
+	// проверяем что на новой строке нет комментария или новой области, если есть, рекурсия
+	if cl := t.currentLet(); cl == '/' || cl == '#' {
+		t.skipComment()
 	}
 }
 
@@ -233,9 +319,12 @@ func (t *Token) currentLet() rune {
 }
 
 func (t *Token) GetPosition() Position {
+	eol := strings.LastIndex(t.srs[:t.offset], "\n") + 1
+	lineBegin := IF[int](eol < 0, 0, eol)
+
 	return Position{
 		Line:   strings.Count(t.srs[:t.offset], "\n") + 1,
-		Column: len([]rune(t.srs[:t.offset])) + 1,
+		Column: len([]rune(t.srs[lineBegin:t.offset])) + 1,
 	}
 }
 
@@ -260,7 +349,7 @@ func (t *Token) scanNumber() (string, error) {
 }
 
 func isLetter(ch rune) bool {
-	return unicode.IsLetter(ch)
+	return unicode.IsLetter(ch) || ch == '_'
 }
 
 func isDigit(ch rune) bool {
@@ -268,5 +357,37 @@ func isDigit(ch rune) bool {
 }
 
 func isSpace(ch rune) bool {
-	return ch == ' ' || ch == '\t' || ch == '\r'
+	return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
+}
+
+func IF[T any](condition bool, a, b T) T {
+	if condition {
+		return a
+	} else {
+		return b
+	}
+}
+
+func IsDigit(str string) bool {
+	for _, c := range str {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func fastToLower(s string) string {
+	rs := bytes.NewBuffer(make([]byte, 0, len(s)))
+	for _, rn := range s {
+		switch {
+		case (rn >= 'А' && rn <= 'Я') || (rn >= 'A' && rn <= 'Z'):
+			rs.WriteRune(rn + 0x20)
+		case rn == 'Ё':
+			rs.WriteRune('ё')
+		default:
+			rs.WriteRune(rn)
+		}
+	}
+	return rs.String()
 }

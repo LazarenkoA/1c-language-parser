@@ -1,8 +1,13 @@
 package main
 
 import (
+	"errors"
+	"fmt"
+	"os"
 	"testing"
+	"time"
 
+	"github.com/k0kubun/pp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -121,6 +126,12 @@ import (
 // 	})
 // }
 
+// type test111[T StatementCall | IfStatement] struct {
+// 	base T
+// }
+// tr := test111[IfStatement]{}
+// _ = tr.base.TrueBlock
+
 func TestParseBase(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		code := ``
@@ -141,16 +152,6 @@ func TestParseBase(t *testing.T) {
 func TestParseIF(t *testing.T) {
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
-					Если 1 = 1 Тогда
-					КонецЕсли;
-				КонецПроцедуры`
-
-		a := NewAST(code)
-		err := a.Parse()
-		assert.NoError(t, err)
-	})
-	t.Run("pass", func(t *testing.T) {
-		code := `Процедура ПодключитьВнешнююОбработку() 
 					Если (1 = 1) Тогда 
 
 					КонецЕсли; 
@@ -163,13 +164,27 @@ func TestParseIF(t *testing.T) {
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
 					Если в = 1 И а = 1 или у = 3 Тогда
-
+						test = 2+2*2;
+						а = 7;
+						а = 7.2;
+					ИначеЕсли Не 4 = 3 И Не 8 = 2 И 1 <> 3 Тогда
+						а = 5;
+					ИначеЕсли Ложь Тогда
+					Иначе
+						а = -(1+1);
+						а = -s;
+						а = -1;
+						а = -7.42;
+						а = Не истина;
 					КонецЕсли;
 				КонецПроцедуры`
 
 		a := NewAST(code)
 		err := a.Parse()
 		assert.NoError(t, err)
+
+		data, _ := a.JSON()
+		assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Expression":{"Operation":11,"Left":{"Operation":12,"Left":{"Operation":4,"Left":{"Name":"в"},"Right":1},"Right":{"Operation":4,"Left":{"Name":"а"},"Right":1}},"Right":{"Operation":4,"Left":{"Name":"у"},"Right":3}},"TrueBlock":[{"Operation":4,"Left":{"Name":"test"},"Right":{"Operation":0,"Left":2,"Right":{"Operation":2,"Left":2,"Right":2}}},{"Operation":4,"Left":{"Name":"а"},"Right":7},{"Operation":4,"Left":{"Name":"а"},"Right":7.2}],"IfElseBlock":[{"Expression":false,"TrueBlock":null,"IfElseBlock":null,"ElseBlock":null},{"Expression":{"Operation":12,"Left":{"Operation":12,"Left":{"Operation":4,"Left":4,"Right":3},"Right":{"Operation":4,"Left":8,"Right":2}},"Right":{"Operation":7,"Left":1,"Right":3}},"TrueBlock":[{"Operation":4,"Left":{"Name":"а"},"Right":5}],"IfElseBlock":null,"ElseBlock":null}],"ElseBlock":[{"Operation":4,"Left":{"Name":"а"},"Right":{"Operation":0,"Left":1,"Right":1}},{"Operation":4,"Left":{"Name":"а"},"Right":{"Name":"s"}},{"Operation":4,"Left":{"Name":"а"},"Right":-1},{"Operation":4,"Left":{"Name":"а"},"Right":-7.42},{"Operation":4,"Left":{"Name":"а"},"Right":false}]}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
 	})
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -236,6 +251,39 @@ func TestParseIF(t *testing.T) {
 
 						КонецЕсли;
 					КонецЕсли;
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Если Истина Тогда
+	
+					КонецЕсли // запятой может и не быть
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Если (Истина или Ложь) Тогда
+						а = 0;
+					КонецЕсли
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Если (1 = 1) Тогда 
+						f = 0 // запятой может не быть
+					КонецЕсли; 
 				КонецПроцедуры`
 
 		a := NewAST(code)
@@ -276,11 +324,23 @@ func TestParseIF(t *testing.T) {
 		err := a.Parse()
 		assert.NoError(t, err)
 	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+						Если ВерсияПлатформыЧислом < 80303641 Тогда
+							ВызватьИсключение НСтр("ru = 'Для работы обработки требуется ""1С:Предприятие"" версии 8.3.3.641 или страше.';sys= ''", "ru");
+						КонецЕсли;
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
 	t.Run("error", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
 					Если в = 1 И (а = 1 или у = 3) Тогда
 						Если в = 1 или у = 3 Тогда
 							а = 1 + 3 * 4
+							b = 1
 						ИначеЕсли ввв Тогда
 
 						ИначеЕсли авыав Тогда
@@ -291,7 +351,7 @@ func TestParseIF(t *testing.T) {
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.EqualError(t, err, "syntax error. line: 5, column: 142 (unexpected literal: \"ИначеЕсли\")")
+		assert.EqualError(t, err, "syntax error. line: 5, column: 7 (unexpected literal: \"b\")")
 	})
 	t.Run("error", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -308,7 +368,7 @@ func TestParseIF(t *testing.T) {
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.EqualError(t, err, "syntax error. line: 8, column: 165 (unexpected literal: \"\\n\")")
+		assert.EqualError(t, err, "syntax error. line: 9, column: 6 (unexpected literal: \"КонецЕсли\")")
 	})
 	t.Run("error", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -320,7 +380,7 @@ func TestParseIF(t *testing.T) {
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.EqualError(t, err, "syntax error. line: 6, column: 136 (unexpected literal: \"КонецПроцедуры\")")
+		assert.EqualError(t, err, "syntax error. line: 6, column: 4 (unexpected literal: \"КонецПроцедуры\")")
 	})
 	t.Run("error", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -331,18 +391,7 @@ func TestParseIF(t *testing.T) {
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.EqualError(t, err, "syntax error. line: 2, column: 51 (unexpected literal: \"Тогда\")")
-	})
-	t.Run("error", func(t *testing.T) {
-		code := `Процедура ПодключитьВнешнююОбработку() 
-					Если f Тогда
-	
-					КонецЕсли
-				КонецПроцедуры`
-
-		a := NewAST(code)
-		err := a.Parse()
-		assert.EqualError(t, err, "syntax error. line: 5, column: 79 (unexpected literal: \"КонецПроцедуры\")")
+		assert.EqualError(t, err, "syntax error. line: 2, column: 11 (unexpected literal: \"Тогда\")")
 	})
 	t.Run("error", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -353,32 +402,526 @@ func TestParseIF(t *testing.T) {
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.EqualError(t, err, "syntax error. line: 2, column: 52 (unexpected literal: \"Тогд\")")
+		assert.EqualError(t, err, "syntax error. line: 2, column: 12 (unexpected literal: \"Тогд\")")
 	})
 	t.Run("error", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
-					Если (1 = 1) Тогда 
-						f = 0
-					КонецЕсли; 
+					Если ав f Тогда
+	
+					КонецЕсли;
 				КонецПроцедуры`
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.EqualError(t, err, "syntax error. line: 4, column: 82 (unexpected literal: \"КонецЕсли\")")
+		assert.EqualError(t, err, "syntax error. line: 2, column: 13 (unexpected literal: \"f\")")
+	})
+	t.Run("\"not\" pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Если Не f Тогда
+
+					КонецЕсли;
+
+					Если Не f Тогда
+						d = 0;
+					ИначеЕсли 3 = 9 Тогда
+						Если тогоСего Тогда
+						
+						КонецЕсли;
+					Иначе
+						Если Не f И не 1 = 1 ИЛИ не (а = 2 ИЛИ Истина) Тогда
+						
+						КонецЕсли;
+					КонецЕсли;
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+}
+
+func TestParseLoop(t *testing.T) {
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Для Каждого ИзмененныйОбъект Из ОбъектыНазначения Цикл
+						Тип = ТипЗнч(ИзмененныйОбъект);
+						Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+							ТипыИзмененныхОбъектов = 0;
+						КонецЕсли;
+					КонецЦикла;
+
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+
+		data, _ := a.JSON()
+		assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Body":[{"Operation":4,"Left":{"Name":"Тип"},"Right":{"Name":"ТипЗнч","Param":[{"Name":"ИзмененныйОбъект"}]}},{"Expression":{"Operation":4,"Left":{"Name":"ТипыИзмененныхОбъектов"},"Right":null},"TrueBlock":[{"Operation":4,"Left":{"Name":"ТипыИзмененныхОбъектов"},"Right":0}],"IfElseBlock":[],"ElseBlock":null}],"For":"ИзмененныйОбъект","To":null,"In":{"Name":"ОбъектыНазначения"}}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Для а = 0 По 100 Цикл
+						Тип = ТипЗнч(ИзмененныйОбъект);
+						Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+							ТипыИзмененныхОбъектов = 0;
+						КонецЕсли;
+					КонецЦикла;
+
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Для а = 0 По 100 Цикл
+						Тип = ТипЗнч(ИзмененныйОбъект);
+   						Продолжить;
+
+						Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+							Продолжить;
+						Иначе
+							Прервать;
+						КонецЕсли;
+					КонецЦикла;
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Для а = 0 По 100 Цикл            
+						Для а = 0 По 100 Цикл
+							Если Истина Тогда
+								Прервать;
+							КонецЕсли;
+						КонецЦикла;
+						
+						Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+							Продолжить;
+						Иначе
+							Прервать;
+						КонецЕсли;
+					КонецЦикла; 
+					
+					Если ТипыИзмененныхОбъектов  = Неопределено Тогда       
+						Для а = 0 По 100 Цикл
+							Если Истина Тогда
+								Прервать;
+							КонецЕсли;
+						КонецЦикла;
+					КонецЕсли;
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Для а = 0 По 100 Цикл            
+						Для а = 0 По 100 Цикл
+							Если Истина Тогда
+								Прервать;
+							КонецЕсли;
+						КонецЦикла;
+						
+						Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+							Продолжить;
+						Иначе
+							Прервать;
+						КонецЕсли;
+					КонецЦикла; 
+					
+					Если ТипыИзмененныхОбъектов  = Неопределено Тогда       
+						Для а = 0 По 100 Цикл
+							Если Истина Тогда
+								Прервать;
+							КонецЕсли;
+						КонецЦикла;
+
+						Продолжить; // вне цикла нельзя
+					КонецЕсли;
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "operator \"Продолжить\" can only be used inside a loop. line: 23, column: 6 (unexpected literal: \"Продолжить\")")
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Функция ПодключитьВнешнююОбработку() 
+					Если 1 = 1 Тогда
+							f = 1+1;
+							Прервать; // вне цикла нельзя
+					КонецЕсли;
+
+					Для Каждого ИзмененныйОбъект Из ОбъектыНазначения Цикл
+						Если 1 = 1 Тогда
+							f = 1+1;
+							Прервать;
+						КонецЕсли;
+					КонецЦикла;
+				КонецФункции`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "operator \"Прервать\" can only be used inside a loop. line: 4, column: 7 (unexpected literal: \"Прервать\")")
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Функция ПодключитьВнешнююОбработку() 
+					Если 1 = 1 Тогда
+							f = 1+1;
+							Прервать;
+					КонецЕсли;
+				КонецФункции`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "operator \"Прервать\" can only be used inside a loop. line: 4, column: 7 (unexpected literal: \"Прервать\")")
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Функция ПодключитьВнешнююОбработку() 
+					Для Каждого ИзмененныйОбъект Из ОбъектыНазначения Цикл
+						Если 1 = 1 Тогда
+							f = 1+1;
+							Прервать;
+						КонецЕсли;
+						продолжить;
+					КонецЦикла;
+
+					Если 1 = 1 Тогда
+							f = 1+1;
+							Прервать;
+					КонецЕсли;
+				КонецФункции`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "operator \"Прервать\" can only be used inside a loop. line: 12, column: 7 (unexpected literal: \"Прервать\")")
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Продолжить; // вне цикла нельзя
+					Для а = 0 По 100 Цикл
+						Тип = ТипЗнч(ИзмененныйОбъект);
+						Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+							Продолжить;
+						Иначе
+							Прервать;
+						КонецЕсли;
+					КонецЦикла;
+
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "operator \"Продолжить\" can only be used inside a loop. line: 2, column: 5 (unexpected literal: \"Продолжить\")")
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Прервать; // вне цикла нельзя
+					Для а = 0 По 100 Цикл
+						Тип = ТипЗнч(ИзмененныйОбъект);
+						Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+							Продолжить;
+						Иначе
+							Прервать;
+						КонецЕсли;
+					КонецЦикла;
+
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "operator \"Прервать\" can only be used inside a loop. line: 2, column: 5 (unexpected literal: \"Прервать\")")
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Для а = 0 По  Цикл
+						Тип = ТипЗнч(ИзмененныйОбъект);
+						Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+							ТипыИзмененныхОбъектов = 0;
+						КонецЕсли;
+					КонецЦикла;
+
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "syntax error. line: 2, column: 19 (unexpected literal: \"Цикл\")")
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					Для ИзмененныйОбъект Из ОбъектыНазначения Цикл
+						Тип = ТипЗнч(ИзмененныйОбъект);
+						Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+							ТипыИзмененныхОбъектов = 0;
+						КонецЕсли;
+					КонецЦикла;
+
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "syntax error. line: 2, column: 26 (unexpected literal: \"Из\")")
+	})
+}
+
+func TestTryCatch(t *testing.T) {
+	t.Run("throw", func(t *testing.T) {
+		t.Run("pass", func(t *testing.T) {
+			code := `Процедура ПодключитьВнешнююОбработку() 
+						Если в = 1 И (а = 1 или у = 3) Тогда
+							f = 0;
+							ВызватьИсключение "dsdsd dsds";							
+							f = 0;
+							f = 0;
+						КонецЕсли;
+					КонецПроцедуры`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+		})
+		t.Run("error", func(t *testing.T) {
+			code := `Процедура ПодключитьВнешнююОбработку() 
+						Если в = 1 И (а = 1 или у = 3) Тогда
+							f = 0;
+							ВызватьИсключение; // без параметров нельзя
+						КонецЕсли;
+					КонецПроцедуры`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.EqualError(t, err, "operator \"ВызватьИсключение\" without arguments can only be used when handling an exception. line: 4, column: 24 (unexpected literal: \";\")")
+		})
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+						Попытка 
+							а = 1+1;					
+						Исключение
+							ВызватьИсключение "";
+						КонецПопытки;
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+						Попытка 
+							Попытка 
+								а = 1+1;					
+							Исключение
+								ВызватьИсключение;
+							КонецПопытки;				
+						Исключение
+							ВызватьИсключение
+						КонецПопытки;
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку()
+						Попытка 
+							а = 1+1;
+							ВызватьИсключение "dsdsd dsds";	  
+							f = 0;
+							f = 0		
+						Исключение
+							а = 1+1;
+							а = 1+1;
+							ВызватьИсключение;  // в блоке Исключение можно вызывать без параметров
+							а = 1+1;
+							
+							Если истина Тогда
+								ВызватьИсключение;  // в блоке Исключение можно вызывать без параметров
+							КонецЕсли
+						КонецПопытки;
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+						Попытка 
+							а = 1+1;
+							Если в = 1 И (а = 1 или у = 3) Тогда
+								ВызватьИсключение "SDSDSD";
+							КонецЕсли;
+						Исключение
+							а = 1+1;
+							ВызватьИсключение "dsd";
+							а = 1+1;
+						КонецПопытки;
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+						Попытка 
+							Попытка 
+								а = 1+1;					
+							Исключение
+								ВызватьИсключение;
+							КонецПопытки;		
+
+							ВызватьИсключение ;
+						Исключение
+							ВызватьИсключение
+						КонецПопытки;
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "operator \"ВызватьИсключение\" without arguments can only be used when handling an exception. line: 9, column: 25 (unexpected literal: \";\")")
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+						Попытка 
+							Попытка 
+								а = 1+1;					
+							Исключение
+								ВызватьИсключение;
+							КонецПопытки;
+						Исключение
+							ВызватьИсключение
+						КонецПопытки;
+						ВызватьИсключение 
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "operator \"ВызватьИсключение\" without arguments can only be used when handling an exception. line: 12, column: 5 (unexpected literal: \"КонецПроцедуры\")")
+	})
+}
+
+func TestParseMethod(t *testing.T) {
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					а = ТипыИзмененныхОбъектов.Найти(Тип)
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					а = ТипыИзмененныхОбъектов.Test.Найти(Тип)
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					а = ТипыИзмененныхОбъектов(Тип);
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку() 
+					а = ТипыИзмененныхОбъектов..Найти(Тип)
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "syntax error. line: 2, column: 32 (unexpected literal: \".\")")
 	})
 }
 
 func TestParseFunctionProcedure(t *testing.T) {
 	t.Run("Function", func(t *testing.T) {
-		t.Run("with directive", func(t *testing.T) {
+		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
 					Функция ПодключитьВнешнююОбработку(Ссылка) 
-
+						f = 1 + gggg - (fd +1 / 3);
 					КонецФункции`
 
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
+
+			data, err := a.JSON()
+			assert.NoError(t, err)
+			assert.Equal(t, `{"Name":"","Body":[{"Type":2,"Name":"ПодключитьВнешнююОбработку","Body":[{"Operation":4,"Left":{"Name":"f"},"Right":{"Operation":1,"Left":{"Operation":0,"Left":1,"Right":{"Name":"gggg"}},"Right":{"Operation":0,"Left":{"Name":"fd"},"Right":{"Operation":3,"Left":1,"Right":3}}}}],"Export":false,"Params":[{"Name":"Ссылка"}],"Directive":"\u0026НасервереБезКонтекста","ExplicitVariables":{}}]}`, string(data))
+		})
+		t.Run("ast", func(t *testing.T) {
+			code := `&НасервереБезКонтекста
+					Функция ПодключитьВнешнююОбработку(Ссылка) 
+						f = парапапапам; 
+					КонецФункции`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Operation)
+			assert.Equal(t, "f", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Left.(VarStatement).Name)
+			assert.Equal(t, "парапапапам", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(VarStatement).Name)
+		})
+		t.Run("ast", func(t *testing.T) {
+			code := `&НасервереБезКонтекста
+					Функция ПодключитьВнешнююОбработку(Ссылка) 
+						f = 221;
+					КонецФункции`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Operation)
+			assert.Equal(t, float64(221), a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(float64))
+		})
+		t.Run("ast", func(t *testing.T) {
+			code := `&НасервереБезКонтекста
+					Функция ПодключитьВнешнююОбработку(Ссылка) 
+						f = "вававава авава";
+					КонецФункции`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+			assert.Equal(t, "вававава авава", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(string))
+		})
+		t.Run("ast", func(t *testing.T) {
+			code := `&НасервереБезКонтекста
+					Функция ПодключитьВнешнююОбработку(Ссылка) 
+						f = Истина;
+					КонецФункции`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+			assert.Equal(t, true, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(bool))
+		})
+		t.Run("ast", func(t *testing.T) {
+			code := `&НасервереБезКонтекста
+					Функция ПодключитьВнешнююОбработку(Ссылка) 
+						f = Ложь;
+					КонецФункции`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+			assert.Equal(t, false, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(bool))
 		})
 		t.Run("bad directive", func(t *testing.T) {
 			code := `&НасервереБез
@@ -393,6 +936,38 @@ func TestParseFunctionProcedure(t *testing.T) {
 		t.Run("without directive", func(t *testing.T) {
 			code := `Функция ПодключитьВнешнююОбработку(Ссылка, вы, выыыыы) 
 
+					КонецФункции`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+		})
+		t.Run("return", func(t *testing.T) {
+			code := `Функция ПодключитьВнешнююОбработку(Ссылка, вы, выыыыы) 
+						Перем а;
+						Перем вы, в;
+
+						Если истина Тогда
+							ВызватьИсключение вызов("");
+						ИначеЕсли 1 = 1 Тогда
+						ИначеЕсли 2 = 2 Тогда
+						Иначе
+							б = а;
+						КонецЕсли;
+					КонецФункции`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+		})
+		t.Run("return", func(t *testing.T) {
+			code := `Функция ПодключитьВнешнююОбработку(Ссылка, вы, выыыыы) 
+						Перем а;
+						Перем вы, в;
+
+						Если истина Тогда
+							Возврат;
+						КонецЕсли;
 					КонецФункции`
 
 			a := NewAST(code)
@@ -415,7 +990,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.EqualError(t, err, "syntax error. line: 3, column: 50 (unexpected literal: \"КонецФунки\")")
+			assert.EqualError(t, err, "syntax error. line: 3, column: 5 (unexpected literal: \"КонецФунки\")")
 		})
 		t.Run("error", func(t *testing.T) {
 			code := `Функция ПодключитьВнешнююОбработку(Ссылка) 
@@ -424,7 +999,16 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.EqualError(t, err, "syntax error. line: 3, column: 50 (unexpected literal: \"КонецПроцедуры\")")
+			assert.EqualError(t, err, "syntax error. line: 3, column: 5 (unexpected literal: \"КонецПроцедуры\")")
+		})
+		t.Run("params def value", func(t *testing.T) {
+			code := `Функция ПодключитьВнешнююОбработку(Парам1, Парам2 = Неопределено, Знач Парам3 = "вывыв", парам4 = 4) 
+
+					КонецФункции`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
 		})
 	})
 	t.Run("Procedure", func(t *testing.T) {
@@ -464,12 +1048,168 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.EqualError(t, err, "syntax error. line: 3, column: 52 (unexpected literal: \"КонецФункции\")")
+			assert.EqualError(t, err, "syntax error. line: 3, column: 5 (unexpected literal: \"КонецФункции\")")
 		})
+		t.Run("with var pass", func(t *testing.T) {
+			code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+						Перем а;
+						Перем вы, в;
+
+						Если истина Тогда
+							ВызватьИсключение "";
+						КонецЕсли;
+					КонецПроцедуры`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+			assert.Equal(t, 3, len(a.ModuleStatement.Body[0].(FunctionOrProcedure).ExplicitVariables))
+		})
+		t.Run("with var error", func(t *testing.T) {
+			code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+						Перем а;
+						Перем а, вы, в;
+
+						Если истина Тогда
+							ВызватьИсключение "";
+						КонецЕсли;
+					КонецПроцедуры`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.ErrorContains(t, err, "variable has already been defined")
+		})
+		t.Run("return", func(t *testing.T) {
+			code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+						Перем а;
+						Перем вы, в;
+
+						Если истина Тогда
+							возврат;
+						КонецЕсли;
+					КонецПроцедуры`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+		})
+		t.Run("return error", func(t *testing.T) {
+			code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+						Перем а;
+						Перем а, вы, в;
+
+						Если истина Тогда
+							возврат "";
+						КонецЕсли;
+					КонецПроцедуры`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.EqualError(t, err, "procedure cannot return a value. line: 6, column: 17 (unexpected literal: \"\")")
+		})
+		t.Run("with var error", func(t *testing.T) {
+			code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+						Перем а;
+						Перем а, вы, в
+
+						Если истина Тогда
+							ВызватьИсключение "";
+						КонецЕсли;
+					КонецПроцедуры`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.EqualError(t, err, "syntax error. line: 5, column: 6 (unexpected literal: \"Если\")")
+		})
+		t.Run("with var error", func(t *testing.T) {
+			code := `Процедура ПодключитьВнешнююОбработку(Ссылка)
+						Если истина Тогда
+							ВызватьИсключение "";
+						КонецЕсли;
+
+						Перем а, вы, в;
+					КонецПроцедуры`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.EqualError(t, err, "syntax error. line: 6, column: 6 (unexpected literal: \"Перем\")")
+		})
+		t.Run("with region", func(t *testing.T) {
+			code := `#Область ПрограммныйИнтерфейс
+					&НасервереБезКонтекста
+					Процедура ПодключитьВнешнююОбработку() 
+
+					КонецПроцедуры
+					#КонецОбласти`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+		})
+		t.Run("through_dot pass", func(t *testing.T) {
+			code := `Процедура ЗагрузитьОбъекты(Задание, Отказ = Ложь) Экспорт
+						Перем СоответствиеРеквизитовШапки;
+					
+						Организация  = Задание.Организация.ВыполнитьМетодСПараметрами(1, "ав", авава);
+						Организация  = Задание.Организация.ВыполнитьМетодБезПараметров();
+						Организация  = Задание.Организация.Код;
+ 
+					КонецПроцедуры`
+
+			a := NewAST(code)
+			err := a.Parse()
+			assert.NoError(t, err)
+
+			data, _ := a.JSON()
+			assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ЗагрузитьОбъекты","Body":[{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"ВыполнитьМетодСПараметрами","Param":[1,"ав",{"Name":"авава"}]},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}},{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"ВыполнитьМетодБезПараметров","Param":null},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}},{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"Код"},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}}],"Export":true,"Params":[{"Name":"Задание"},{"Name":"Отказ","Default":false}],"Directive":"","ExplicitVariables":{"СоответствиеРеквизитовШапки":{"Name":"СоответствиеРеквизитовШапки"}}}]}`, string(data))
+
+		})
+	})
+	t.Run("many", func(t *testing.T) {
+		code := `&Насервере
+				Процедура ПодключитьВнешнююОбработку() 
+					Возврат
+				КонецПроцедуры
+
+				&НаКлиенте
+				Функция ОчиститьПараметрыТЖ(парам1, парам2 = Неопределено) Экспорт
+					Возврат 100;
+				КонецФункции
+
+				Функция ПарамТарам(Знач парам1)
+					возврат;
+				КонецФункции`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+		if !t.Failed() {
+			assert.Equal(t, 3, len(a.ModuleStatement.Body))
+		}
+		if !t.Failed() {
+			assert.Equal(t, "ПодключитьВнешнююОбработку", a.ModuleStatement.Body[0].(FunctionOrProcedure).Name)
+			assert.Equal(t, "ОчиститьПараметрыТЖ", a.ModuleStatement.Body[1].(FunctionOrProcedure).Name)
+			assert.Equal(t, "ПарамТарам", a.ModuleStatement.Body[2].(FunctionOrProcedure).Name)
+
+			assert.Equal(t, 0, len(a.ModuleStatement.Body[0].(FunctionOrProcedure).Params))
+			assert.Equal(t, 2, len(a.ModuleStatement.Body[1].(FunctionOrProcedure).Params))
+			assert.Equal(t, 1, len(a.ModuleStatement.Body[2].(FunctionOrProcedure).Params))
+
+			assert.Equal(t, "&Насервере", a.ModuleStatement.Body[0].(FunctionOrProcedure).Directive)
+			assert.Equal(t, "&НаКлиенте", a.ModuleStatement.Body[1].(FunctionOrProcedure).Directive)
+			assert.Equal(t, "", a.ModuleStatement.Body[2].(FunctionOrProcedure).Directive)
+		}
 	})
 }
 
 func TestParseBaseExpression(t *testing.T) {
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) ds; КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) ds = 222; uu = 9; КонецПроцедуры`
 
@@ -479,7 +1219,7 @@ func TestParseBaseExpression(t *testing.T) {
 	})
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
-					ds = 222; uu = 9;
+					ds = 222; ds = 222; uu = 9
 				КонецПроцедуры`
 
 		a := NewAST(code)
@@ -511,13 +1251,164 @@ func TestParseBaseExpression(t *testing.T) {
 	})
 	t.Run("error", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
-					ds = 222 
+					ds = 222
+					uu = 9;
 				КонецПроцедуры`
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.EqualError(t, err, "syntax error. line: 3, column: 65 (unexpected literal: \"КонецПроцедуры\")")
+		assert.EqualError(t, err, "syntax error. line: 3, column: 5 (unexpected literal: \"uu\")")
 	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+					ds = ИспользуемыеНастройки[0].Структура[0].Структура;
+					fdfd = СтруктураКонтрагент();
+					fdfd = f.СтруктураКонтрагент(gf, ghf);
+					СтруктураКонтрагент.Наименование = СтрокаВывода[РезультатВывода.Колонки.Найти("СтруктураКонтрагентНаименование").Имя];
+					СтрокаСпискаПП[ТекКолонка.Ключ]["РасшифровкаПлатежа"].Добавить(ВременнаяСтруктура);
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+					ds = ИспользуемыеНастройки[0].Структура[0].Структура;
+					fdfd = СтруктураКонтрагент();
+					fdfd = f.СтруктураКонтрагент(gf, ghf);
+					СтруктураКонтрагент.Наименование = СтрокаВывода[РезультатВывода.Колонки.Найти("СтруктураКонтрагентНаименование.Имя];
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.Error(t, err)
+	})
+	t.Run("new pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+					Контекст = Новый Структура;
+					Контекст = Новый Структура();
+					Контекст = Новый Структура("выыыы");
+					Контекст = Новый Структура(какойтофункшин());
+					Контекст = Новый Структура("какойтоимя", чето);
+					Запрос = Новый Запрос(ТекстЗапросаЗадание());
+					Оповещение = Новый ОписаниеОповещения(,, Контекст,
+													"ОткрытьНавигационнуюСсылкуПриОбработкеОшибки", ОбщегоНазначенияСлужебныйКлиент);
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("new error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+					Контекст = Новый Структура(;
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "syntax error. line: 2, column: 32 (unexpected literal: \";\")")
+	})
+	t.Run("new error", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+					Контекст = Новый Структура("выыыы);
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.Error(t, err)
+	})
+}
+
+func TestParseAST(t *testing.T) {
+	code := `Процедура ОткрытьНавигационнуюСсылку(НавигационнаяСсылка, Знач Оповещение = Неопределено) Экспорт
+	
+	Контекст = Новый Структура;
+	Контекст.Вставить("НавигационнаяСсылка", НавигационнаяСсылка);
+	Контекст.Вставить("Оповещение", Оповещение);
+	
+	ОписаниеОшибки = СтроковыеФункцииКлиентСервер.ПодставитьПараметрыВСтроку(
+			НСтр("ru = 'Не удалось перейти по ссылке ""%1"" по причине: 
+			           |Неверно задана навигационная ссылка.'"),
+			НавигационнаяСсылка);
+	
+	Если Не ОбщегоНазначенияСлужебныйКлиент.ЭтоДопустимаяСсылка(НавигационнаяСсылка) Тогда 
+		ОбщегоНазначенияСлужебныйКлиент.ОткрытьНавигационнуюСсылкуОповеститьОбОшибке(ОписаниеОшибки, Контекст);
+		Возврат;
+	КонецЕсли;
+	
+	Если ОбщегоНазначенияСлужебныйКлиент.ЭтоВебСсылка(НавигационнаяСсылка)
+		Или ОбщегоНазначенияСлужебныйКлиент.ЭтоНавигационнаяСсылка(НавигационнаяСсылка) Тогда 
+		
+		Попытка
+			а = а /0;
+		Исключение
+			ОбщегоНазначенияСлужебныйКлиент.ОткрытьНавигационнуюСсылкуОповеститьОбОшибке(ОписаниеОшибки, Контекст);
+			Возврат;
+		КонецПопытки;
+		
+		Если Оповещение <> Неопределено Тогда 
+			ПриложениеЗапущено = Истина;
+			ВыполнитьОбработкуОповещения(Оповещение, ПриложениеЗапущено);
+		КонецЕсли;
+		
+		Возврат;
+	КонецЕсли;
+	
+	Если ОбщегоНазначенияСлужебныйКлиент.ЭтоСсылкаНаСправку(НавигационнаяСсылка) Тогда 
+		ОткрытьСправку(НавигационнаяСсылка);
+		Возврат;
+	КонецЕсли;
+КонецПроцедуры`
+
+	a := NewAST(code)
+	err := a.Parse()
+	assert.NoError(t, err)
+	pp.Println(a.ModuleStatement)
+}
+
+func TestBigProcedure(t *testing.T) {
+	if _, err := os.Stat("testdata"); errors.Is(err, os.ErrNotExist) {
+		t.Fatal("testdata file not found")
+	}
+
+	fileData, err := os.ReadFile("testdata")
+	assert.NoError(t, err)
+
+	a := NewAST(string(fileData))
+	s := time.Now()
+	err = a.Parse()
+	fmt.Println("milliseconds -", time.Since(s).Milliseconds())
+	assert.NoError(t, err)
+}
+
+func TestTernaryOperator(t *testing.T) {
+	code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
+					ds = ?(Истина, ?(dd = 3, а = 1, Наименование), СтруктураКонтрагент.Наименование);
+				КонецПроцедуры`
+	a := NewAST(code)
+	err := a.Parse()
+	assert.NoError(t, err)
+
+	data, _ := a.JSON()
+	assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Operation":4,"Left":{"Name":"ds"},"Right":{"Expression":true,"TrueBlock":{"Expression":{"Operation":4,"Left":{"Name":"dd"},"Right":3},"TrueBlock":{"Operation":4,"Left":{"Name":"а"},"Right":1},"ElseBlock":{"Name":"Наименование"}},"ElseBlock":{"Unit":{"Name":"Наименование"},"Call":{"Name":"СтруктураКонтрагент"}}}}],"Export":false,"Params":[{"Name":"Ссылка"}],"Directive":"","ExplicitVariables":{}}]}`, string(data))
+}
+
+func TestArrayStruct(t *testing.T) {
+	code := `Процедура ПодключитьВнешнююОбработку()        
+				м = Новый Массив();
+				в = м[4];
+				
+				м = Новый Структура("ав", уцуцу);
+				в = м["вывыв"];
+			КонецПроцедуры`
+
+	a := NewAST(code)
+	err := a.Parse()
+	assert.NoError(t, err)
+
+	data, _ := a.JSON()
+	assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Operation":4,"Left":{"Name":"м"},"Right":{"Constructor":"Массив","Param":null}},{"Operation":4,"Left":{"Name":"в"},"Right":{"Item":4,"Object":{"Name":"м"}}},{"Operation":4,"Left":{"Name":"м"},"Right":{"Constructor":"Структура","Param":["ав",{"Name":"уцуцу"}]}},{"Operation":4,"Left":{"Name":"в"},"Right":{"Item":"вывыв","Object":{"Name":"м"}}}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
 }
 
 func BenchmarkString(b *testing.B) {
@@ -541,30 +1432,4 @@ func test(str string) {
 
 func testPt(str *string) {
 
-}
-
-func testGoodCode() string {
-	return `  Процедура ТипЗамераПриИзменении(Элемент)
-	Если Объект.ТипЗамера=ПредопределенноеЗначение("Перечисление.ТипыЗамеров.Произвольный") Тогда
-		Элементы.ДополнительнаяОбработка.Видимость = Истина;
-	Иначе
-		Элементы.ДополнительнаяОбработка.Видимость = Ложь;
-	КонецЕсли;
-
-	
-	Старт = ТекущаяУниверсальнаяДатаВМиллисекундах();
-	Для а = 0 По Количество Цикл   
-		Если а > 0 И (а%Гранулярность = 0 ИЛИ а = Количество) Тогда  
-			Стоп = ТекущаяУниверсальнаяДатаВМиллисекундах();
-			ДобавитьТочку(Серия, а, Стоп-Старт);	     
-			Старт = ТекущаяУниверсальнаяДатаВМиллисекундах();    
-		КонецЕсли;
-		
-		новСправочник = Справочники.Справочник1.СоздатьЭлемент();
-		новСправочник.Наименование = "спр"+ Строка(а);
-		новСправочник.Записать();
-	КонецЦикла;    
-
-КонецПроцедуры
-`
 }
