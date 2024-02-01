@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/k0kubun/pp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -1364,7 +1363,7 @@ func TestParseAST(t *testing.T) {
 	a := NewAST(code)
 	err := a.Parse()
 	assert.NoError(t, err)
-	pp.Println(a.ModuleStatement)
+	// pp.Println(a.ModuleStatement)
 }
 
 func TestBigProcedure(t *testing.T) {
