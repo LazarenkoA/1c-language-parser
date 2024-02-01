@@ -12,7 +12,7 @@
 КонецПроцедуры
 ```
 AST:
-```json
+```
 main.ModuleStatement{
   Name: "",
   Body: []main.Statement{
@@ -48,7 +48,7 @@ main.ModuleStatement{
 
 ```
 AST:
-```json
+```
 main.ModuleStatement{
   Name: "",
   Body: []main.Statement{
@@ -192,7 +192,7 @@ main.ModuleStatement{
 <details>
 <summary>получаем такое AST</summary>
 
-```json
+```
 main.ModuleStatement{
   Name: "",
   Body: []main.Statement{

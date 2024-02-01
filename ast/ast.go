@@ -1,4 +1,6 @@
-package main
+package ast
+
+//go:generate goyacc  .\grammar.y
 
 import (
 	"encoding/json"

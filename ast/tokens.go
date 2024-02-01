@@ -1,4 +1,4 @@
-package main
+package ast
 
 import (
 	"bytes"
@@ -10,8 +10,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 )
-
-//go:generate goyacc  .\grammar.y
 
 type Position struct {
 	Line   int

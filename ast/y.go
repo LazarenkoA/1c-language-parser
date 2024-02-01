@@ -2,7 +2,7 @@
 
 //line .\grammar.y:1
 
-package main
+package ast
 
 import __yyfmt__ "fmt"
 
