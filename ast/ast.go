@@ -166,8 +166,6 @@ func unary(iv interface{}) interface{} {
 		return -v
 	case IUnary:
 		return v.Unary()
-	case INot:
-		return v.Not()
 	default:
 		return v
 	}
@@ -177,12 +175,8 @@ func not(iv interface{}) interface{} {
 	switch v := iv.(type) {
 	case bool:
 		return !v
-	case ExpStatement:
-		v.Not()
-		return v
-	case VarStatement:
-		v.Not()
-		return v
+	case INot:
+		return v.Not()
 	default:
 		return v
 	}

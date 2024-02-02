@@ -61,27 +61,29 @@ const EndLoop = 57361
 const Break = 57362
 const Not = 57363
 const ValueParam = 57364
-const Continue = 57365
-const Try = 57366
-const Catch = 57367
-const EndTry = 57368
-const Number = 57369
-const String = 57370
-const New = 57371
-const Function = 57372
-const EndFunction = 57373
-const Return = 57374
-const Throw = 57375
-const NeEq = 57376
-const Le = 57377
-const Ge = 57378
-const Or = 57379
-const And = 57380
-const True = 57381
-const False = 57382
-const Undefind = 57383
-const Export = 57384
-const UNARY = 57385
+const While = 57365
+const Continue = 57366
+const Try = 57367
+const Catch = 57368
+const EndTry = 57369
+const Number = 57370
+const String = 57371
+const New = 57372
+const Function = 57373
+const EndFunction = 57374
+const Return = 57375
+const Throw = 57376
+const NeEq = 57377
+const Le = 57378
+const Ge = 57379
+const Or = 57380
+const And = 57381
+const True = 57382
+const False = 57383
+const Undefind = 57384
+const Export = 57385
+const Date = 57386
+const UNARY = 57387
 
 var yyToknames = [...]string{
 	"$end",
@@ -106,6 +108,7 @@ var yyToknames = [...]string{
 	"Break",
 	"Not",
 	"ValueParam",
+	"While",
 	"Continue",
 	"Try",
 	"Catch",
@@ -126,6 +129,7 @@ var yyToknames = [...]string{
 	"False",
 	"Undefind",
 	"Export",
+	"Date",
 	"'='",
 	"'>'",
 	"'<'",
@@ -151,7 +155,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line .\grammar.y:316
+//line .\grammar.y:315
 
 //line yacctab:1
 var yyExca = [...]int8{
@@ -165,158 +169,168 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 449
+const yyLast = 494
 
 var yyAct = [...]uint8{
-	64, 61, 147, 19, 33, 58, 63, 59, 156, 145,
-	102, 20, 102, 98, 20, 128, 41, 101, 20, 76,
-	90, 91, 92, 88, 89, 51, 42, 103, 44, 87,
-	85, 86, 80, 81, 82, 83, 84, 82, 83, 84,
-	21, 23, 79, 50, 57, 60, 20, 27, 43, 41,
-	78, 12, 11, 93, 94, 95, 90, 91, 92, 88,
-	89, 97, 99, 25, 35, 87, 85, 86, 80, 81,
-	82, 83, 84, 106, 108, 152, 109, 45, 113, 158,
-	112, 114, 115, 116, 117, 118, 119, 120, 121, 122,
-	123, 124, 125, 126, 111, 110, 104, 104, 129, 105,
-	60, 18, 136, 37, 168, 49, 20, 130, 132, 166,
-	14, 142, 159, 107, 112, 154, 8, 48, 24, 54,
-	80, 81, 82, 83, 84, 29, 28, 56, 137, 60,
-	26, 15, 148, 140, 139, 141, 143, 30, 31, 32,
-	7, 146, 38, 99, 100, 53, 151, 149, 16, 155,
-	52, 75, 36, 37, 47, 37, 160, 72, 138, 163,
-	13, 134, 73, 164, 165, 77, 96, 167, 69, 54,
-	22, 68, 74, 17, 5, 29, 28, 56, 10, 9,
-	71, 70, 3, 144, 40, 6, 157, 30, 31, 32,
-	162, 39, 1, 67, 46, 53, 34, 55, 4, 2,
-	52, 131, 36, 90, 91, 92, 88, 89, 153, 65,
-	66, 62, 87, 85, 86, 80, 81, 82, 83, 84,
-	90, 91, 92, 88, 89, 37, 0, 20, 0, 87,
-	85, 86, 80, 81, 82, 83, 84, 0, 0, 127,
-	0, 54, 0, 0, 0, 0, 0, 29, 28, 56,
-	0, 161, 0, 0, 0, 0, 0, 0, 0, 30,
-	31, 32, 0, 0, 0, 0, 0, 53, 0, 0,
-	0, 0, 52, 0, 36, 90, 91, 92, 88, 89,
-	150, 0, 0, 0, 87, 85, 86, 80, 81, 82,
-	83, 84, 0, 0, 0, 0, 90, 91, 92, 88,
-	89, 135, 0, 0, 0, 87, 85, 86, 80, 81,
-	82, 83, 84, 133, 0, 0, 0, 0, 90, 91,
-	92, 88, 89, 0, 0, 0, 0, 87, 85, 86,
-	80, 81, 82, 83, 84, 0, 0, 90, 91, 92,
-	88, 89, 0, 0, 0, 0, 87, 85, 86, 80,
-	81, 82, 83, 84, 90, 91, 92, 88, 89, 0,
-	0, 0, 0, 87, 85, 86, 80, 81, 82, 83,
-	84, 90, 91, 92, 0, 89, 0, 0, 0, 0,
-	87, 85, 86, 80, 81, 82, 83, 84, 90, 91,
-	92, 37, 0, 0, 0, 0, 0, 87, 85, 86,
-	80, 81, 82, 83, 84, 0, 0, 91, 92, 0,
-	0, 0, 0, 29, 28, 87, 85, 86, 80, 81,
-	82, 83, 84, 92, 0, 30, 31, 32, 0, 0,
-	87, 85, 86, 80, 81, 82, 83, 84, 0, 0,
-	36, 87, 85, 86, 80, 81, 82, 83, 84,
+	65, 62, 152, 19, 64, 34, 162, 60, 59, 52,
+	92, 93, 94, 90, 91, 104, 20, 103, 42, 78,
+	89, 87, 88, 82, 83, 84, 85, 86, 150, 100,
+	104, 27, 23, 20, 20, 20, 18, 20, 131, 43,
+	45, 20, 21, 44, 51, 58, 61, 12, 11, 42,
+	25, 80, 165, 116, 95, 96, 97, 94, 84, 85,
+	86, 140, 99, 101, 175, 89, 87, 88, 82, 83,
+	84, 85, 86, 61, 108, 110, 111, 36, 112, 14,
+	107, 106, 115, 117, 118, 119, 120, 121, 122, 123,
+	124, 125, 126, 127, 128, 129, 114, 113, 15, 26,
+	132, 46, 61, 82, 83, 84, 85, 86, 135, 133,
+	92, 93, 94, 90, 91, 16, 8, 115, 173, 50,
+	89, 87, 88, 82, 83, 84, 85, 86, 164, 24,
+	146, 141, 61, 81, 166, 13, 144, 160, 145, 147,
+	143, 7, 49, 153, 102, 151, 77, 101, 17, 48,
+	156, 157, 154, 39, 161, 38, 142, 38, 137, 79,
+	98, 73, 167, 22, 10, 170, 74, 9, 5, 149,
+	171, 172, 70, 55, 174, 75, 69, 76, 41, 148,
+	29, 28, 57, 163, 3, 72, 71, 6, 169, 40,
+	1, 68, 30, 31, 33, 47, 32, 35, 56, 4,
+	2, 54, 105, 134, 159, 66, 53, 67, 37, 92,
+	93, 94, 90, 91, 63, 0, 0, 0, 0, 89,
+	87, 88, 82, 83, 84, 85, 86, 0, 0, 158,
+	92, 93, 94, 90, 91, 0, 0, 0, 38, 0,
+	89, 87, 88, 82, 83, 84, 85, 86, 109, 0,
+	130, 0, 0, 0, 55, 38, 0, 0, 0, 0,
+	0, 29, 28, 57, 0, 0, 0, 0, 0, 0,
+	0, 55, 0, 30, 31, 33, 0, 32, 29, 28,
+	57, 0, 54, 168, 0, 0, 0, 53, 0, 37,
+	30, 31, 33, 0, 32, 0, 0, 0, 0, 54,
+	0, 0, 0, 0, 53, 0, 37, 0, 92, 93,
+	94, 90, 91, 155, 0, 0, 0, 0, 89, 87,
+	88, 82, 83, 84, 85, 86, 0, 0, 0, 0,
+	92, 93, 94, 90, 91, 139, 0, 0, 0, 0,
+	89, 87, 88, 82, 83, 84, 85, 86, 0, 0,
+	0, 0, 92, 93, 94, 90, 91, 138, 0, 0,
+	0, 0, 89, 87, 88, 82, 83, 84, 85, 86,
+	136, 0, 0, 0, 0, 92, 93, 94, 90, 91,
+	0, 0, 0, 0, 0, 89, 87, 88, 82, 83,
+	84, 85, 86, 0, 0, 92, 93, 94, 90, 91,
+	0, 0, 0, 0, 0, 89, 87, 88, 82, 83,
+	84, 85, 86, 92, 93, 94, 90, 91, 0, 0,
+	0, 0, 0, 89, 87, 88, 82, 83, 84, 85,
+	86, 92, 93, 94, 38, 91, 0, 0, 0, 0,
+	0, 89, 87, 88, 82, 83, 84, 85, 86, 92,
+	93, 94, 0, 0, 0, 0, 0, 29, 28, 89,
+	87, 88, 82, 83, 84, 85, 86, 93, 94, 30,
+	31, 33, 0, 32, 0, 0, 89, 87, 88, 82,
+	83, 84, 85, 86, 0, 37, 89, 87, 88, 82,
+	83, 84, 85, 86,
 }
 
 var yyPact = [...]int16{
-	170, -1000, 170, -1000, 110, -1000, -1000, 174, 173, 0,
-	-1, 126, 126, 48, -3, -1000, 165, -12, 21, 126,
-	-1000, 386, -1000, 21, -1000, -1000, -3, -1000, -1000, -1000,
-	-1000, -1000, -1000, -43, -1000, -29, -4, -24, 147, 147,
-	150, -1000, 220, 220, 220, 148, 144, 160, 148, -29,
-	-14, -1000, 220, 220, 220, -1000, 161, 169, -40, -1000,
-	320, 136, -45, -1000, 320, -1000, -1000, -1000, -1000, -1000,
-	386, 386, 220, 98, 148, 160, -47, -1000, 47, -1000,
-	220, 220, 220, 220, 220, 220, 220, 220, 220, 220,
-	220, 220, 220, 186, -1000, 398, -37, 220, -1000, 220,
-	-1000, 148, -1000, -1000, -1000, -1000, 303, 156, 284, 77,
-	-47, -1000, 153, -1000, -11, -11, -1000, -1000, -1000, 74,
-	74, 398, 337, 354, 372, 387, 398, -1000, 220, 169,
-	-1000, -1000, -1000, 148, 95, 220, -1000, -1000, -1000, -44,
-	220, 121, 150, 262, 148, -1000, 22, 103, 220, -10,
-	-1000, 53, -1000, 99, 148, 241, -1000, 148, -1000, -1000,
-	-1000, 148, 148, 90, 121, 85, -1000, -1000, -1000,
+	164, -1000, 164, -1000, 110, -1000, -1000, 162, 159, -6,
+	-7, 93, 93, -19, -3, -1000, 158, -23, 7, 93,
+	-1000, 429, -1000, 7, -1000, -1000, -3, -1000, -1000, -1000,
+	-1000, -1000, -1000, -1000, -43, -1000, -18, -11, -14, 142,
+	142, 150, -1000, 250, 250, 250, 152, 139, 154, 152,
+	-18, 75, -1000, 250, 250, 250, -1000, 155, -25, -26,
+	-1000, 378, 136, -29, -1000, 378, -1000, -1000, -1000, -1000,
+	-1000, 429, 250, 250, 233, 250, 152, 154, -44, -1000,
+	21, -1000, 250, 250, 250, 250, 250, 250, 250, 250,
+	250, 250, 250, 250, 250, 195, -1000, 441, -16, 250,
+	-1000, 250, -1000, 152, -1000, -1000, -1000, -1000, 360, 153,
+	340, 317, 35, -44, -1000, 151, -1000, 8, 8, -1000,
+	-1000, -1000, 55, 55, 441, 396, 414, 431, 20, 441,
+	-1000, 250, -25, -1000, -1000, -1000, 152, 114, 250, -1000,
+	-1000, -1000, -1000, -27, 250, 132, 150, 295, 152, 152,
+	-1000, 174, 125, 250, -12, -1000, 109, 25, -1000, 121,
+	152, 273, -1000, 152, -1000, -1000, -1000, -1000, 152, 152,
+	99, 132, 45, -1000, -1000, -1000,
 }
 
 var yyPgo = [...]uint8{
-	0, 211, 1, 6, 210, 182, 209, 2, 208, 201,
-	27, 199, 5, 0, 118, 198, 25, 160, 110, 7,
-	4, 197, 196, 77, 194, 19, 193, 64, 192, 191,
-	17, 3, 190, 186, 184, 183,
+	0, 214, 1, 4, 207, 184, 205, 2, 204, 203,
+	202, 200, 8, 0, 129, 199, 9, 135, 79, 7,
+	5, 198, 197, 101, 195, 19, 191, 77, 190, 189,
+	17, 3, 188, 183, 179, 178, 169,
 }
 
 var yyR1 = [...]int8{
 	0, 28, 15, 15, 14, 14, 11, 11, 29, 5,
 	5, 2, 2, 1, 1, 9, 9, 23, 23, 24,
 	24, 6, 7, 7, 8, 8, 22, 32, 4, 33,
-	4, 3, 3, 3, 3, 3, 3, 3, 3, 10,
-	10, 20, 20, 27, 27, 27, 35, 26, 13, 13,
+	4, 34, 4, 3, 3, 3, 3, 3, 3, 3,
+	3, 10, 10, 20, 20, 27, 27, 27, 36, 26,
 	13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-	13, 13, 13, 13, 13, 13, 19, 19, 18, 18,
-	18, 17, 17, 17, 21, 21, 16, 16, 16, 16,
-	16, 16, 16, 12, 12, 25, 25, 30, 31, 34,
+	13, 13, 13, 13, 13, 13, 13, 13, 19, 19,
+	18, 18, 18, 17, 17, 17, 21, 21, 16, 16,
+	16, 16, 16, 16, 16, 16, 12, 12, 25, 25,
+	30, 31, 35,
 }
 
 var yyR2 = [...]int8{
 	0, 1, 0, 1, 0, 1, 1, 2, 0, 11,
 	10, 0, 1, 1, 3, 0, 1, 0, 1, 3,
 	4, 7, 0, 5, 0, 2, 8, 0, 9, 0,
-	8, 1, 1, 1, 1, 1, 1, 2, 2, 0,
-	1, 1, 3, 1, 4, 4, 0, 6, 1, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 2, 3,
-	3, 3, 3, 3, 2, 1, 0, 1, 1, 2,
-	3, 0, 1, 3, 2, 5, 1, 1, 1, 1,
-	1, 1, 1, 1, 3, 1, 3, 1, 1, 1,
+	8, 0, 6, 1, 1, 1, 1, 1, 1, 2,
+	2, 0, 1, 1, 3, 1, 4, 4, 0, 6,
+	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	2, 3, 3, 3, 3, 3, 2, 1, 0, 1,
+	1, 2, 3, 0, 1, 3, 2, 5, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 3, 1, 3,
+	1, 1, 1,
 }
 
 var yyChk = [...]int16{
-	-1000, -28, -11, -5, -15, 4, -5, 30, 6, 5,
-	5, 52, 52, -17, -18, 5, 22, -17, 53, -31,
-	58, 43, 5, 53, -14, 42, -18, -16, 28, 27,
-	39, 40, 41, -20, -22, -27, 54, 5, -14, -29,
-	-34, 59, 55, 52, 52, -23, -24, 7, -23, -27,
-	-13, -16, 52, 47, 21, -21, 29, -13, -12, -19,
-	-13, -2, -1, -3, -13, -6, -4, -26, 23, 20,
-	33, 32, 9, 14, 24, 7, -25, 5, -2, 56,
-	46, 47, 48, 49, 50, 44, 45, 43, 37, 38,
-	34, 35, 36, -13, -13, -13, 5, -31, 53, -31,
-	8, -30, 57, -10, -16, -10, -13, 15, -13, -2,
-	-25, -30, -31, 31, -13, -13, -13, -13, -13, -13,
-	-13, -13, -13, -13, -13, -13, -13, 53, 52, -13,
-	-19, -9, -3, 10, 5, 17, 25, -30, 5, -12,
-	-31, -2, 16, -13, -35, 53, -13, -7, 11, -20,
-	18, -2, 53, -8, 12, -13, 18, -33, 26, 13,
-	-2, 10, -32, -2, -2, -2, 19, -7, 19,
+	-1000, -28, -11, -5, -15, 4, -5, 31, 6, 5,
+	5, 54, 54, -17, -18, 5, 22, -17, 55, -31,
+	60, 45, 5, 55, -14, 43, -18, -16, 29, 28,
+	40, 41, 44, 42, -20, -22, -27, 56, 5, -14,
+	-29, -35, 61, 57, 54, 54, -23, -24, 7, -23,
+	-27, -13, -16, 54, 49, 21, -21, 30, -13, -12,
+	-19, -13, -2, -1, -3, -13, -6, -4, -26, 24,
+	20, 34, 33, 9, 14, 23, 25, 7, -25, 5,
+	-2, 58, 48, 49, 50, 51, 52, 46, 47, 45,
+	38, 39, 35, 36, 37, -13, -13, -13, 5, -31,
+	55, -31, 8, -30, 59, -10, -16, -19, -13, 15,
+	-13, -13, -2, -25, -30, -31, 32, -13, -13, -13,
+	-13, -13, -13, -13, -13, -13, -13, -13, -13, -13,
+	55, 54, -13, -19, -9, -3, 10, 5, 17, 18,
+	26, -30, 5, -12, -31, -2, 16, -13, -34, -36,
+	55, -13, -7, 11, -20, 18, -2, -2, 55, -8,
+	12, -13, 18, -33, 19, 27, 13, -2, 10, -32,
+	-2, -2, -2, 19, -7, 19,
 }
 
 var yyDef = [...]int8{
 	2, -2, -2, 6, 0, 3, 7, 0, 0, 0,
-	0, 71, 71, 0, 72, 68, 0, 0, 4, 0,
-	88, 0, 69, 4, 8, 5, 73, 70, 76, 77,
-	78, 79, 80, 81, 82, 41, 0, 43, 17, 17,
-	0, 89, 0, 0, 66, 11, 18, 0, 11, 42,
-	0, 48, 0, 0, 0, 65, 0, 0, 0, 83,
-	67, 0, 12, 13, 31, 32, 33, 34, 35, 36,
-	39, 39, 0, 0, 11, 0, 0, 85, 0, 45,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 58, 64, 74, 0, 44, 66,
-	10, 15, 87, 37, 40, 38, 0, 0, 0, 0,
-	0, 19, 0, 9, 50, 51, 52, 53, 54, 55,
-	56, 57, 59, 60, 61, 62, 63, 49, 66, 0,
-	84, 14, 16, 11, 0, 0, 46, 20, 86, 0,
-	0, 22, 0, 0, 11, 75, 0, 24, 0, 0,
-	29, 0, 26, 0, 11, 0, 27, 11, 47, 21,
-	25, 11, 11, 0, 22, 0, 30, 23, 28,
+	0, 73, 73, 0, 74, 70, 0, 0, 4, 0,
+	91, 0, 71, 4, 8, 5, 75, 72, 78, 79,
+	80, 81, 82, 83, 84, 85, 43, 0, 45, 17,
+	17, 0, 92, 0, 0, 68, 11, 18, 0, 11,
+	44, 0, 50, 0, 0, 0, 67, 0, 0, 0,
+	86, 69, 0, 12, 13, 33, 34, 35, 36, 37,
+	38, 41, 68, 0, 0, 0, 11, 0, 0, 88,
+	0, 47, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 60, 66, 76, 0,
+	46, 68, 10, 15, 90, 39, 42, 40, 0, 0,
+	0, 0, 0, 0, 19, 0, 9, 52, 53, 54,
+	55, 56, 57, 58, 59, 61, 62, 63, 64, 65,
+	51, 68, 0, 87, 14, 16, 11, 0, 0, 31,
+	48, 20, 89, 0, 0, 22, 0, 0, 11, 11,
+	77, 0, 24, 0, 0, 29, 0, 0, 26, 0,
+	11, 0, 27, 11, 32, 49, 21, 25, 11, 11,
+	0, 22, 0, 30, 23, 28,
 }
 
 var yyTok1 = [...]int8{
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 50, 3, 3,
-	52, 53, 48, 46, 58, 47, 59, 49, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 57,
-	45, 43, 44, 54, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 52, 3, 3,
+	54, 55, 50, 48, 60, 49, 61, 51, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 59,
+	47, 45, 46, 56, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 55, 3, 56,
+	3, 57, 3, 58,
 }
 
 var yyTok2 = [...]int8{
@@ -324,7 +338,7 @@ var yyTok2 = [...]int8{
 	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
 	22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
 	32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
-	42, 51,
+	42, 43, 44, 53,
 }
 
 var yyTok3 = [...]int8{
@@ -725,14 +739,14 @@ yydefault:
 		yyDollar = yyS[yypt-11 : yypt+1]
 //line .\grammar.y:113
 		{
-			yyVAL.funcProc = createFunctionOrProcedure(NodeTypeFunction, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[9].opt_explicit_variables, yyDollar[10].opt_body)
+			yyVAL.funcProc = createFunctionOrProcedure(pfTypeFunction, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[9].opt_explicit_variables, yyDollar[10].opt_body)
 			isFunction(false, yylex)
 		}
 	case 10:
 		yyDollar = yyS[yypt-10 : yypt+1]
 //line .\grammar.y:118
 		{
-			yyVAL.funcProc = createFunctionOrProcedure(NodeTypeProcedure, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[8].opt_explicit_variables, yyDollar[9].opt_body)
+			yyVAL.funcProc = createFunctionOrProcedure(pfTypeProcedure, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[8].opt_explicit_variables, yyDollar[9].opt_body)
 		}
 	case 11:
 		yyDollar = yyS[yypt-0 : yypt+1]
@@ -887,313 +901,334 @@ yydefault:
 			setLoopFlag(false, yylex)
 		}
 	case 31:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:210
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line .\grammar.y:209
 		{
-			yyVAL.stmt = yyDollar[1].expr
+			setLoopFlag(true, yylex)
 		}
 	case 32:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:211
+		yyDollar = yyS[yypt-6 : yypt+1]
+//line .\grammar.y:209
 		{
-			yyVAL.stmt = yyDollar[1].stmt_if
+			yyVAL.stmt_loop = LoopStatement{
+				WhileExpr: yyDollar[2].expr,
+				Body:      yyDollar[5].opt_body,
+			}
 		}
 	case 33:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:212
+//line .\grammar.y:216
 		{
-			yyVAL.stmt = yyDollar[1].stmt_loop
+			yyVAL.stmt = yyDollar[1].expr
 		}
 	case 34:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:213
+//line .\grammar.y:217
 		{
-			yyVAL.stmt = yyDollar[1].stmt_tryCatch
+			yyVAL.stmt = yyDollar[1].stmt_if
 		}
 	case 35:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:214
+//line .\grammar.y:218
+		{
+			yyVAL.stmt = yyDollar[1].stmt_loop
+		}
+	case 36:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:219
+		{
+			yyVAL.stmt = yyDollar[1].stmt_tryCatch
+		}
+	case 37:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:220
 		{
 			yyVAL.stmt = ContinueStatement{}
 			checkLoopOperator(yyDollar[1].token, yylex)
 		}
-	case 36:
+	case 38:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:215
+//line .\grammar.y:221
 		{
 			yyVAL.stmt = BreakStatement{}
 			checkLoopOperator(yyDollar[1].token, yylex)
 		}
-	case 37:
+	case 39:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line .\grammar.y:216
+//line .\grammar.y:222
 		{
 			yyVAL.stmt = ThrowStatement{Param: yyDollar[2].opt_param}
 			checkThrowParam(yyDollar[1].token, yyDollar[2].opt_param, yylex)
 		}
-	case 38:
+	case 40:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line .\grammar.y:217
+//line .\grammar.y:223
 		{
-			yyVAL.stmt = ReturnStatement{Param: yyDollar[2].opt_param}
-			checkReturnParam(yyDollar[2].opt_param, yylex)
+			yyVAL.stmt = ReturnStatement{Param: yyDollar[2].opt_expr}
+			checkReturnParam(yyDollar[2].opt_expr, yylex)
 		}
-	case 39:
+	case 41:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:220
+//line .\grammar.y:226
 		{
 			yyVAL.opt_param = nil
 		}
-	case 40:
+	case 42:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:221
+//line .\grammar.y:227
 		{
 			yyVAL.opt_param = yyDollar[1].simple_expr
 		}
-	case 41:
+	case 43:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:226
+//line .\grammar.y:232
 		{
 			yyVAL.through_dot = yyDollar[1].identifier
 		}
-	case 42:
+	case 44:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:227
+//line .\grammar.y:233
 		{
 			yyVAL.through_dot = CallChainStatement{Unit: yyDollar[3].identifier, Call: yyDollar[1].through_dot}
 		}
-	case 43:
+	case 45:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:230
+//line .\grammar.y:236
 		{
 			yyVAL.identifier = VarStatement{Name: yyDollar[1].token.literal}
 		}
-	case 44:
+	case 46:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line .\grammar.y:231
+//line .\grammar.y:237
 		{
 			yyVAL.identifier = MethodStatement{Name: yyDollar[1].token.literal, Param: yyDollar[3].exprs}
 		}
-	case 45:
+	case 47:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line .\grammar.y:232
+//line .\grammar.y:238
 		{
 			yyVAL.identifier = ItemStatement{Object: yyDollar[1].identifier, Item: yyDollar[3].expr}
 		}
-	case 46:
+	case 48:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:237
+//line .\grammar.y:243
 		{
 			setTryFlag(true, yylex)
 		}
-	case 47:
+	case 49:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line .\grammar.y:237
+//line .\grammar.y:243
 		{
 			yyVAL.stmt_tryCatch = TryStatement{Body: yyDollar[2].opt_body, Catch: yyDollar[5].opt_body}
 			setTryFlag(false, yylex)
 		}
-	case 48:
+	case 50:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:243
+//line .\grammar.y:249
 		{
 			yyVAL.expr = yyDollar[1].simple_expr
 		}
-	case 49:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:244
-		{
-			yyVAL.expr = yyDollar[2].expr
-		}
-	case 50:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:245
-		{
-			yyVAL.expr = ExpStatement{Operation: OpPlus, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
-		}
 	case 51:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:246
-		{
-			yyVAL.expr = ExpStatement{Operation: OpMinus, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
-		}
-	case 52:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:247
-		{
-			yyVAL.expr = ExpStatement{Operation: OpMul, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
-		}
-	case 53:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:248
-		{
-			yyVAL.expr = ExpStatement{Operation: OpDiv, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
-		}
-	case 54:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:249
-		{
-			yyVAL.expr = ExpStatement{Operation: OpMod, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
-		}
-	case 55:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:250
 		{
-			yyVAL.expr = ExpStatement{Operation: OpGt, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = yyDollar[2].expr
 		}
-	case 56:
+	case 52:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:251
 		{
-			yyVAL.expr = ExpStatement{Operation: OpLt, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = ExpStatement{Operation: OpPlus, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
-	case 57:
+	case 53:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:252
 		{
-			yyVAL.expr = ExpStatement{Operation: OpEq, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = ExpStatement{Operation: OpMinus, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
-	case 58:
-		yyDollar = yyS[yypt-2 : yypt+1]
+	case 54:
+		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:253
 		{
-			yyVAL.expr = unary(yyDollar[2].expr)
+			yyVAL.expr = ExpStatement{Operation: OpMul, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
-	case 59:
+	case 55:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:254
 		{
-			yyVAL.expr = ExpStatement{Operation: OpOr, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = ExpStatement{Operation: OpDiv, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
-	case 60:
+	case 56:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:255
 		{
-			yyVAL.expr = ExpStatement{Operation: OpAnd, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = ExpStatement{Operation: OpMod, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
-	case 61:
+	case 57:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:256
 		{
-			yyVAL.expr = ExpStatement{Operation: OpNe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = ExpStatement{Operation: OpGt, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
-	case 62:
+	case 58:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:257
 		{
-			yyVAL.expr = ExpStatement{Operation: OpLe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = ExpStatement{Operation: OpLt, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
-	case 63:
+	case 59:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:258
 		{
-			yyVAL.expr = ExpStatement{Operation: OpGe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = ExpStatement{Operation: OpEq, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
-	case 64:
+	case 60:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line .\grammar.y:259
 		{
-			yyVAL.expr = not(yyDollar[2].expr)
+			yyVAL.expr = unary(yyDollar[2].expr)
 		}
-	case 65:
-		yyDollar = yyS[yypt-1 : yypt+1]
+	case 61:
+		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:260
 		{
-			yyVAL.expr = yyDollar[1].new_object
+			yyVAL.expr = ExpStatement{Operation: OpOr, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
-	case 66:
-		yyDollar = yyS[yypt-0 : yypt+1]
+	case 62:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line .\grammar.y:261
+		{
+			yyVAL.expr = ExpStatement{Operation: OpAnd, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+		}
+	case 63:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line .\grammar.y:262
+		{
+			yyVAL.expr = ExpStatement{Operation: OpNe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+		}
+	case 64:
+		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:263
 		{
-			yyVAL.opt_expr = nil
+			yyVAL.expr = ExpStatement{Operation: OpLe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+		}
+	case 65:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line .\grammar.y:264
+		{
+			yyVAL.expr = ExpStatement{Operation: OpGe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+		}
+	case 66:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line .\grammar.y:265
+		{
+			yyVAL.expr = not(yyDollar[2].expr)
 		}
 	case 67:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:263
+//line .\grammar.y:266
+		{
+			yyVAL.expr = yyDollar[1].new_object
+		}
+	case 68:
+		yyDollar = yyS[yypt-0 : yypt+1]
+//line .\grammar.y:269
+		{
+			yyVAL.opt_expr = nil
+		}
+	case 69:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:269
 		{
 			yyVAL.opt_expr = yyDollar[1].expr
 		}
-	case 68:
+	case 70:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:268
+//line .\grammar.y:272
 		{
 			yyVAL.declarations_method_param = *(&ParamStatement{}).Fill(nil, yyDollar[1].token)
 		}
-	case 69:
+	case 71:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line .\grammar.y:269
+//line .\grammar.y:273
 		{
 			yyVAL.declarations_method_param = *(&ParamStatement{}).Fill(&yyDollar[1].token, yyDollar[2].token)
 		}
-	case 70:
+	case 72:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:270
+//line .\grammar.y:274
 		{
 			yyVAL.declarations_method_param = *(yyVAL.declarations_method_param.DefaultValue(yyDollar[3].simple_expr))
 		}
-	case 71:
+	case 73:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:273
+//line .\grammar.y:277
 		{
 			yyVAL.declarations_method_params = []ParamStatement{}
 		}
-	case 72:
+	case 74:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:274
+//line .\grammar.y:278
 		{
 			yyVAL.declarations_method_params = []ParamStatement{yyDollar[1].declarations_method_param}
 		}
-	case 73:
+	case 75:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:275
+//line .\grammar.y:279
 		{
 			yyVAL.declarations_method_params = append(yyDollar[1].declarations_method_params, yyDollar[3].declarations_method_param)
 		}
-	case 74:
+	case 76:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line .\grammar.y:279
+//line .\grammar.y:283
 		{
 			yyVAL.new_object = NewObjectStatement{Constructor: yyDollar[2].token.literal}
 		}
-	case 75:
+	case 77:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line .\grammar.y:280
+//line .\grammar.y:284
 		{
 			yyVAL.new_object = NewObjectStatement{Constructor: yyDollar[2].token.literal, Param: yyDollar[4].exprs}
 		}
-	case 76:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:283
-		{
-			yyVAL.simple_expr = yyDollar[1].token.value
-		}
-	case 77:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:284
-		{
-			yyVAL.simple_expr = yyDollar[1].token.value
-		}
 	case 78:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:285
-		{
-			yyVAL.simple_expr = yyDollar[1].token.value
-		}
-	case 79:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:286
-		{
-			yyVAL.simple_expr = yyDollar[1].token.value
-		}
-	case 80:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:287
 		{
 			yyVAL.simple_expr = yyDollar[1].token.value
 		}
-	case 81:
+	case 79:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:288
+		{
+			yyVAL.simple_expr = yyDollar[1].token.value
+		}
+	case 80:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:289
+		{
+			yyVAL.simple_expr = yyDollar[1].token.value
+		}
+	case 81:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:290
+		{
+			yyVAL.simple_expr = yyDollar[1].token.value
+		}
+	case 82:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:291
+		{
+			yyVAL.simple_expr = yyDollar[1].token.value
+		}
+	case 83:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:292
+		{
+			yyVAL.simple_expr = UndefinedStatement{}
+		}
+	case 84:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:293
 		{
 			if tok, ok := yyDollar[1].through_dot.(Token); ok {
 				yyVAL.simple_expr = tok.literal
@@ -1201,37 +1236,33 @@ yydefault:
 				yyVAL.simple_expr = yyDollar[1].through_dot
 			}
 		}
-	case 82:
+	case 85:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:295
+//line .\grammar.y:300
 		{
 			yyVAL.simple_expr = yyDollar[1].ternary
 		}
-	case 83:
+	case 86:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:298
+//line .\grammar.y:303
 		{
-			if yyDollar[1].opt_expr != nil {
-				yyVAL.exprs = []Statement{yyDollar[1].opt_expr}
-			} else {
-				yyVAL.exprs = nil
-			}
+			yyVAL.exprs = []Statement{yyDollar[1].opt_expr}
 		}
-	case 84:
+	case 87:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:305
+//line .\grammar.y:304
 		{
-			yyVAL.exprs = append(yyDollar[1].exprs, yyDollar[3].opt_expr)
+			yyVAL.exprs = append(yyVAL.exprs, yyDollar[3].opt_expr)
 		}
-	case 85:
+	case 88:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:308
+//line .\grammar.y:307
 		{
 			yyVAL.identifiers = []Token{yyDollar[1].token}
 		}
-	case 86:
+	case 89:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:309
+//line .\grammar.y:308
 		{
 			yyVAL.identifiers = append(yyVAL.identifiers, yyDollar[3].token)
 		}

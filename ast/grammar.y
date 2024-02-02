@@ -64,8 +64,8 @@ package ast
     identifier Statement
 }
 
-%token<token> Directive Identifier Procedure Var EndProcedure If Then ElseIf Else EndIf For Each In To Loop EndLoop Break Not ValueParam
-%token<token> Continue Try Catch EndTry Number String New Function EndFunction Return Throw NeEq Le Ge Or And True False Undefind Export
+%token<token> Directive Identifier Procedure Var EndProcedure If Then ElseIf Else EndIf For Each In To Loop EndLoop Break Not ValueParam While
+%token<token> Continue Try Catch EndTry Number String New Function EndFunction Return Throw NeEq Le Ge Or And True False Undefind Export Date
 
 
 //%right '='
@@ -111,12 +111,12 @@ manyfuncProc: funcProc { $$ = []Statement{$1} }
 
 funcProc: opt_directive Function Identifier '(' declarations_method_params ')' opt_export { isFunction(true, yylex) } opt_explicit_variables opt_body EndFunction
         {  
-            $$ = createFunctionOrProcedure(NodeTypeFunction, $1, $3.literal, $5, $7, $9, $10)
+            $$ = createFunctionOrProcedure(pfTypeFunction, $1, $3.literal, $5, $7, $9, $10)
             isFunction(false, yylex) 
         }
         | opt_directive Procedure Identifier '(' declarations_method_params ')' opt_export opt_explicit_variables opt_body EndProcedure
         { 
-            $$ = createFunctionOrProcedure(NodeTypeProcedure, $1, $3.literal, $5, $7, $8, $9)
+            $$ = createFunctionOrProcedure(pfTypeProcedure, $1, $3.literal, $5, $7, $8, $9)
         }
 ;
 
@@ -205,6 +205,12 @@ stmt_loop: For Each Identifier In through_dot Loop { setLoopFlag(true, yylex) } 
         Body: $7,
     }
     setLoopFlag(false, yylex)
+}
+|While expr Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
+    $$ = LoopStatement{
+        WhileExpr: $2,
+        Body: $5,
+    }
 };
 
 stmt : expr { $$ = $1 }
@@ -214,7 +220,7 @@ stmt : expr { $$ = $1 }
     | Continue { $$ = ContinueStatement{}; checkLoopOperator($1, yylex) }
     | Break { $$ = BreakStatement{}; checkLoopOperator($1, yylex) }
     | Throw opt_param { $$ = ThrowStatement{ Param: $2 }; checkThrowParam($1, $2, yylex) }
-    | Return opt_param { $$ = ReturnStatement{ Param: $2 }; checkReturnParam($2, yylex) }
+    | Return opt_expr { $$ = ReturnStatement{ Param: $2 }; checkReturnParam($2, yylex) }
 ;
 
 opt_param: { $$ = nil } 
@@ -261,8 +267,6 @@ expr : simple_expr { $$ = $1 }
 ;
 
 opt_expr: { $$ = nil } | expr { $$ = $1 };
-//opt_exprs: { $$ = nil } | exprs { $$ = $1 };
-
 
 // опиасываются правила по которым можно объявлять параметры в функции или процедуре
 declarations_method_param: Identifier {  $$ = *(&ParamStatement{}).Fill(nil, $1) } // обычный параметр
@@ -284,7 +288,8 @@ simple_expr:  String { $$ = $1.value  }
             | Number { $$ =  $1.value }
             | True { $$ =  $1.value  }
             | False { $$ =  $1.value  }
-            | Undefind { $$ = $1.value  }
+            | Date { $$ =  $1.value  }
+            | Undefind { $$ = UndefinedStatement{} }
             | through_dot { 
                 if tok, ok := $1.(Token); ok {
                     $$ = tok.literal
@@ -295,14 +300,8 @@ simple_expr:  String { $$ = $1.value  }
             | ternary { $$ =  $1  } // тернарный оператор
 ;
 
-exprs : opt_expr {
-    if $1 != nil {
-        $$ = []Statement{$1} 
-    } else {
-        $$ = nil;
-    }
-}
-	| exprs comma opt_expr { $$ = append($1, $3) }
+exprs : opt_expr {$$ = []Statement{$1} }
+	| exprs comma opt_expr { $$ = append($$, $3);  }
 ;    
 
 identifiers: Identifier { $$ = []Token{$1} }

@@ -1,6 +1,8 @@
 package ast
 
 import (
+	"crypto/rand"
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -94,7 +96,7 @@ func Test_Next(t *testing.T) {
 				token, err = tok.Next(code)
 				assert.NoError(t, err)
 				assert.Equal(t, "00010101", tok.literal)
-				assert.Equal(t, token, String)
+				assert.Equal(t, token, Date)
 			})
 			t.Run("error", func(t *testing.T) {
 				tok := new(Token)
@@ -111,7 +113,7 @@ func Test_Next(t *testing.T) {
 				assert.Equal(t, token, int('='))
 
 				token, err = tok.Next(code)
-				assert.EqualError(t, err, "Incorrect Date type constant")
+				assert.EqualError(t, err, "incorrect Date type constant")
 			})
 		})
 	})
@@ -312,7 +314,7 @@ func Benchmark(b *testing.B) {
 			}
 		})
 		b.Run("RegExp2", func(b *testing.B) {
-			re := regexp.MustCompile(`^[0-9]+$`)
+			re := regexp.MustCompile(`[0-9]+`)
 			for i := 0; i < b.N; i++ {
 				re.MatchString(str)
 			}
@@ -331,12 +333,42 @@ func Benchmark(b *testing.B) {
 			}
 		})
 	})
+	b.Run("string concatenation", func(b *testing.B) {
+		var test string
+		b.Run("strings.Builder", func(b *testing.B) {
+			builder := strings.Builder{}
+			for i := 0; i < b.N; i++ {
+				builder.WriteString(generateRandomString(50))
+			}
+			test = builder.String()
+		})
+		b.Run("fmt.Sprintf", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				test = fmt.Sprintf("%s%s", test, generateRandomString(50))
+			}
+		})
+		b.Run("concatenation", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				test += generateRandomString(50)
+			}
+		})
+		_ = test
+	})
 }
 
 func IsDigitRegExp(str string) bool {
-	re := regexp.MustCompile(`^[0-9]+$`)
+	re := regexp.MustCompile(`[0-9]+`)
 	if re.MatchString(str) {
 		return true
 	}
 	return false
+}
+
+func generateRandomString(length int) string {
+	b := make([]byte, length)
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimRight(string(b), "\x00")
 }

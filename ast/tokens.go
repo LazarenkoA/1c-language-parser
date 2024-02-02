@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 	"unicode"
 	"unicode/utf8"
 )
@@ -53,6 +54,7 @@ var (
 		"попытка":           Try,
 		"новый":             New,
 		"исключение":        Catch,
+		"пока":              While,
 		"конецпопытки":      EndTry,
 		"функция":           Function,
 		"конецфункции":      EndFunction,
@@ -91,6 +93,8 @@ func (t *Token) Next(srs string) (token int, err error) {
 	//	t.value, _ = strconv.ParseInt(t.literal, 10, 64)
 	case String:
 		t.value = t.literal
+	case Date:
+		t.value, err = time.Parse("20060102", t.literal)
 	case Undefind:
 		t.value = nil
 	case True:
@@ -140,10 +144,10 @@ func (t *Token) next() (int, string, error) {
 		}
 
 		if !IsDigit(literal) {
-			return EOF, emptyLit, errors.New("Incorrect Date type constant")
+			return EOF, emptyLit, errors.New("incorrect Date type constant")
 		}
 
-		return String, literal, nil
+		return Date, literal, nil
 	case let == '=' || let == '-' || let == '+' || let == '*' || let == '/' || let == '(' || let == '?' || let == ')' || let == '[' || let == ']' || let == ':' || let == ';' || let == '.' || let == ',' || let == '%':
 		t.nextPos()
 		return int(let), string(let), nil
@@ -289,8 +293,10 @@ func (t *Token) skipRegions() {
 	}
 
 	// проверяем что на новой строке нет комментария или новой области, если есть, рекурсия
-	if cl := t.currentLet(); cl == '/' || cl == '#' {
+	if cl := t.currentLet(); cl == '/' {
 		t.skipComment()
+	} else if cl := t.currentLet(); cl == '#' {
+		t.skipRegions()
 	}
 }
 

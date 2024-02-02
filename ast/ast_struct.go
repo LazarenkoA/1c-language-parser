@@ -4,9 +4,9 @@ type StatementType int
 type OperationType int
 
 const (
-	Undefined StatementType = iota
-	NodeTypeProcedure
-	NodeTypeFunction
+	pfTypeUndefined StatementType = iota
+	pfTypeProcedure
+	pfTypeFunction
 )
 
 const (
@@ -42,9 +42,8 @@ type ModuleStatement struct {
 }
 
 type VarStatement struct {
-	Name  string
-	unary bool
-	not   bool
+	addStatementField
+	Name string
 }
 
 type FunctionOrProcedure struct {
@@ -64,12 +63,17 @@ type ParamStatement struct {
 	Default Statement `json:"Default,omitempty"`
 }
 
+type addStatementField struct {
+	unary bool
+	not   bool
+}
+
 type ExpStatement struct {
+	addStatementField
+
 	Operation OperationType
 	Left      interface{}
 	Right     interface{}
-	unary     bool // для сложных выражений, таких как -(1+1)
-	not       bool
 }
 
 type IfStatement struct {
@@ -100,11 +104,15 @@ type NewObjectStatement struct {
 }
 
 type CallChainStatement struct {
+	addStatementField
+
 	Unit Statement
 	Call Statement
 }
 
 type MethodStatement struct {
+	addStatementField
+
 	Name  string
 	Param []Statement
 }
@@ -116,10 +124,11 @@ type ContinueStatement struct {
 }
 
 type LoopStatement struct {
-	Body []Statement
-	For  Statement
-	To   Statement
-	In   Statement
+	Body      []Statement
+	For       Statement `json:"For,omitempty"`
+	To        Statement `json:"To,omitempty"`
+	In        Statement `json:"In,omitempty"`
+	WhileExpr Statement `json:"WhileExpr,omitempty"`
 }
 
 type TernaryStatement struct {
@@ -154,17 +163,65 @@ func (e ExpStatement) Unary() interface{} {
 	return e
 }
 
+func (e ExpStatement) Not() interface{} {
+	e.not = true
+	return e
+}
+
 func (e VarStatement) Unary() interface{} {
 	e.unary = true
 	return e
 }
 
-func (e *ExpStatement) Not() interface{} {
+func (e VarStatement) Not() interface{} {
 	e.not = true
 	return e
 }
 
-func (e *VarStatement) Not() interface{} {
+func (e CallChainStatement) Unary() interface{} {
+	e.unary = true
+	return e
+}
+
+func (e CallChainStatement) Not() interface{} {
 	e.not = true
 	return e
+}
+
+func (e MethodStatement) Not() interface{} {
+	e.not = true
+	return e
+}
+
+func (o OperationType) String() string {
+	switch o {
+	case OpPlus:
+		return "+"
+	case OpMinus:
+		return "-"
+	case OpMul:
+		return "*"
+	case OpDiv:
+		return "/"
+	case OpEq:
+		return "="
+	case OpGt:
+		return ">"
+	case OpLt:
+		return "<"
+	case OpNe:
+		return "<>"
+	case OpLe:
+		return "<="
+	case OpGe:
+		return ">="
+	case OpMod:
+		return "%"
+	case OpOr:
+		return "ИЛИ"
+	case OpAnd:
+		return "И"
+	default:
+		return ""
+	}
 }

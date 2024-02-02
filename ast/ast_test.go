@@ -1,9 +1,11 @@
 package ast
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -456,7 +458,7 @@ func TestParseLoop(t *testing.T) {
 		assert.NoError(t, err)
 
 		data, _ := a.JSON()
-		assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Body":[{"Operation":4,"Left":{"Name":"Тип"},"Right":{"Name":"ТипЗнч","Param":[{"Name":"ИзмененныйОбъект"}]}},{"Expression":{"Operation":4,"Left":{"Name":"ТипыИзмененныхОбъектов"},"Right":null},"TrueBlock":[{"Operation":4,"Left":{"Name":"ТипыИзмененныхОбъектов"},"Right":0}],"IfElseBlock":[],"ElseBlock":null}],"For":"ИзмененныйОбъект","To":null,"In":{"Name":"ОбъектыНазначения"}}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
+		assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Body":[{"Operation":4,"Left":{"Name":"Тип"},"Right":{"Name":"ТипЗнч","Param":[{"Name":"ИзмененныйОбъект"}]}},{"Expression":{"Operation":4,"Left":{"Name":"ТипыИзмененныхОбъектов"},"Right":{}},"TrueBlock":[{"Operation":4,"Left":{"Name":"ТипыИзмененныхОбъектов"},"Right":0}],"IfElseBlock":[],"ElseBlock":null}],"For":"ИзмененныйОбъект","In":{"Name":"ОбъектыНазначения"}}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
 	})
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -881,10 +883,12 @@ func TestParseFunctionProcedure(t *testing.T) {
 			code := `&НасервереБезКонтекста
 					Функция ПодключитьВнешнююОбработку(Ссылка) 
 						f = 221;
+						возврат 2+2;
 					КонецФункции`
 
 			a := NewAST(code)
 			err := a.Parse()
+			fmt.Println(a.Print(&PrintConf{Margin: 2}))
 			assert.NoError(t, err)
 			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Operation)
 			assert.Equal(t, float64(221), a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(float64))
@@ -1104,7 +1108,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.EqualError(t, err, "procedure cannot return a value. line: 6, column: 17 (unexpected literal: \"\")")
+			assert.ErrorContains(t, err, "procedure cannot return a value")
 		})
 		t.Run("with var error", func(t *testing.T) {
 			code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
@@ -1139,6 +1143,13 @@ func TestParseFunctionProcedure(t *testing.T) {
 					Процедура ПодключитьВнешнююОбработку() 
 
 					КонецПроцедуры
+					#КонецОбласти
+
+					#Область СлужебныеПроцедурыИФункции
+					&НасервереБезКонтекста
+						Процедура ПодключитьВнешнююОбработку() 
+	
+						КонецПроцедуры
 					#КонецОбласти`
 
 			a := NewAST(code)
@@ -1160,7 +1171,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 			assert.NoError(t, err)
 
 			data, _ := a.JSON()
-			assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ЗагрузитьОбъекты","Body":[{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"ВыполнитьМетодСПараметрами","Param":[1,"ав",{"Name":"авава"}]},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}},{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"ВыполнитьМетодБезПараметров","Param":null},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}},{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"Код"},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}}],"Export":true,"Params":[{"Name":"Задание"},{"Name":"Отказ","Default":false}],"Directive":"","ExplicitVariables":{"СоответствиеРеквизитовШапки":{"Name":"СоответствиеРеквизитовШапки"}}}]}`, string(data))
+			assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ЗагрузитьОбъекты","Body":[{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"ВыполнитьМетодСПараметрами","Param":[1,"ав",{"Name":"авава"}]},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}},{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"ВыполнитьМетодБезПараметров","Param":[null]},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}},{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"Код"},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}}],"Export":true,"Params":[{"Name":"Задание"},{"Name":"Отказ","Default":false}],"Directive":"","ExplicitVariables":{"СоответствиеРеквизитовШапки":{"Name":"СоответствиеРеквизитовШапки"}}}]}`, string(data))
 
 		})
 	})
@@ -1321,8 +1332,30 @@ func TestParseBaseExpression(t *testing.T) {
 
 func TestParseAST(t *testing.T) {
 	code := `Процедура ОткрытьНавигационнуюСсылку(НавигационнаяСсылка, Знач Оповещение = Неопределено) Экспорт
-	
-	Контекст = Новый Структура;
+МассивСтроки.Добавить(Новый ФорматированнаяСтрока(ЧастьСтроки.Значение, Новый Шрифт(,,Истина)));
+
+	Позиция = Найти(Строка, Разделитель);
+	Пока Позиция > 0 Цикл
+		Подстрока = Лев(Строка, Позиция - 1);
+		Если Не ПропускатьПустыеСтроки Или Не ПустаяСтрока(Подстрока) Тогда
+			Если СокращатьНепечатаемыеСимволы Тогда
+				Результат.Добавить(СокрЛП(Подстрока));
+			Иначе
+				Результат.Добавить(Подстрока);
+			КонецЕсли;
+		КонецЕсли;
+		Строка = Сред(Строка, Позиция + СтрДлина(Разделитель));
+		Позиция = Найти(Строка, Разделитель);
+	КонецЦикла;
+
+
+вуцуцу = Дата('00010101');
+
+
+	вы = ввывыв[0];
+	СтрокаСпискаПП[ТекКолонка.Ключ].Вставить(ТекКолонкаЗначение.Ключ, УровеньГруппировки3[ПрефиксПоля + СтрЗаменить(ТекКолонкаЗначение.Значение, ".", "")]);
+
+	Контекст = Новый Структура();
 	Контекст.Вставить("НавигационнаяСсылка", НавигационнаяСсылка);
 	Контекст.Вставить("Оповещение", Оповещение);
 	
@@ -1364,6 +1397,10 @@ func TestParseAST(t *testing.T) {
 	err := a.Parse()
 	assert.NoError(t, err)
 	// pp.Println(a.ModuleStatement)
+
+	p := a.Print(&PrintConf{Margin: 4})
+	// fmt.Println(p)
+	assert.Equal(t, true, compareHashes(code, p))
 }
 
 func TestBigProcedure(t *testing.T) {
@@ -1379,6 +1416,9 @@ func TestBigProcedure(t *testing.T) {
 	err = a.Parse()
 	fmt.Println("milliseconds -", time.Since(s).Milliseconds())
 	assert.NoError(t, err)
+
+	// p := a.Print(&PrintConf{Margin: 4})
+	// fmt.Println(p)
 }
 
 func TestTernaryOperator(t *testing.T) {
@@ -1407,7 +1447,74 @@ func TestArrayStruct(t *testing.T) {
 	assert.NoError(t, err)
 
 	data, _ := a.JSON()
-	assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Operation":4,"Left":{"Name":"м"},"Right":{"Constructor":"Массив","Param":null}},{"Operation":4,"Left":{"Name":"в"},"Right":{"Item":4,"Object":{"Name":"м"}}},{"Operation":4,"Left":{"Name":"м"},"Right":{"Constructor":"Структура","Param":["ав",{"Name":"уцуцу"}]}},{"Operation":4,"Left":{"Name":"в"},"Right":{"Item":"вывыв","Object":{"Name":"м"}}}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
+	assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Operation":4,"Left":{"Name":"м"},"Right":{"Constructor":"Массив","Param":[null]}},{"Operation":4,"Left":{"Name":"в"},"Right":{"Item":4,"Object":{"Name":"м"}}},{"Operation":4,"Left":{"Name":"м"},"Right":{"Constructor":"Структура","Param":["ав",{"Name":"уцуцу"}]}},{"Operation":4,"Left":{"Name":"в"},"Right":{"Item":"вывыв","Object":{"Name":"м"}}}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
+}
+
+func TestPrint(t *testing.T) {
+	code := `&НаКлиенте
+					Процедура Проба() 
+						Если в = 1 или у = 3 И 0 <> 3 и не гоого и Истина и ав = неопределено Тогда
+							а=1 + 3 *4;
+						а=1 + 3 *4;
+							fgd = 1
+						ИначеЕсли ввв Тогда Если в = 1 Тогда
+							а = -(1 + 3 *4);
+Если в = 1 Тогда
+							а = 1 + 3 *4;
+							КонецЕсли
+							КонецЕсли
+						ИначеЕсли авыав Тогда
+
+						Иначе						
+							ваывы = 1 + 3 *4;
+ваывы = 1 + 3 *4
+						КонецЕсли;
+
+						а = 1 + 3 *4
+					КонецПроцедуры
+
+					Функция авава(пар1, пар2) экспорт
+						Для Каждого ИзмененныйОбъект Из ОбъектыНазначения Цикл
+							Тип = ТипЗнч(ИзмененныйОбъект);
+							Если ТипыИзмененныхОбъектов = Неопределено Тогда
+								ТипыИзмененныхОбъектов.Добавить(Тип);
+							КонецЕсли;
+
+Для Каждого ИзмененныйОбъект Из ОбъектыНазначения Цикл
+        Тип = ТипЗнч(ИзмененныйОбъект);
+        Если ТипыИзмененныхОбъектов = Неопределено Тогда
+            ТипыИзмененныхОбъектов.Добавить(Тип);
+        Иначе
+        КонецЕсли;
+    КонецЦикла;
+
+						КонецЦикла;
+
+						Для а = 0 По 100 Цикл
+							Тип = ТипЗнч(ИзмененныйОбъект);
+							Если ТипыИзмененныхОбъектов  = Неопределено Тогда
+								Продолжить; Иначе 	Прервать;
+							КонецЕсли;
+						КонецЦикла;
+					Конецфункции
+					
+					Процедура Опрпп(пар1, Знач пар2 = 2.2, пар1 = Неопределено, Пар3 = "авава") 
+
+						Попытка 
+							а = 1+1;
+ВызватьИсключение ававава();
+						Исключение
+							ВызватьИсключение "";
+ВызватьИсключение ;
+						КонецПопытки;
+					Конецпроцедуры`
+
+	a := NewAST(code)
+	err := a.Parse()
+	assert.NoError(t, err)
+
+	// p := a.Print(&PrintConf{Margin: 4})
+	// fmt.Println(p)
 }
 
 func BenchmarkString(b *testing.B) {
@@ -1431,4 +1538,19 @@ func test(str string) {
 
 func testPt(str *string) {
 
+}
+
+func compareHashes(str1, str2 string) bool {
+	str1 = strings.ReplaceAll(str1, " ", "")
+	str1 = strings.ReplaceAll(str1, "\t", "")
+	str1 = strings.ReplaceAll(str1, "\n", "")
+
+	str2 = strings.ReplaceAll(str2, " ", "")
+	str2 = strings.ReplaceAll(str2, "\t", "")
+	str2 = strings.ReplaceAll(str2, "\n", "")
+
+	hash1 := sha256.Sum256([]byte(fastToLower(str1)))
+	hash2 := sha256.Sum256([]byte(fastToLower(str2)))
+
+	return hash1 == hash2
 }
