@@ -12,13 +12,13 @@ import __yyfmt__ "fmt"
 type yySymType struct {
 	yys                        int
 	token                      Token
-	stmt_if                    IfStatement
-	opt_elseif_list            []*IfStatement
+	stmt_if                    *IfStatement
+	opt_elseif_list            []Statement
 	opt_else                   []Statement
 	stmt                       Statement
 	opt_stmt                   Statement
 	stmt_tryCatch              Statement
-	stmt_loop                  LoopStatement
+	stmt_loop                  *LoopStatement
 	funcProc                   FunctionOrProcedure
 	body                       []Statement
 	opt_body                   []Statement
@@ -739,14 +739,14 @@ yydefault:
 		yyDollar = yyS[yypt-11 : yypt+1]
 //line .\grammar.y:113
 		{
-			yyVAL.funcProc = createFunctionOrProcedure(pfTypeFunction, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[9].opt_explicit_variables, yyDollar[10].opt_body)
+			yyVAL.funcProc = createFunctionOrProcedure(PFTypeFunction, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[9].opt_explicit_variables, yyDollar[10].opt_body)
 			isFunction(false, yylex)
 		}
 	case 10:
 		yyDollar = yyS[yypt-10 : yypt+1]
 //line .\grammar.y:118
 		{
-			yyVAL.funcProc = createFunctionOrProcedure(pfTypeProcedure, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[8].opt_explicit_variables, yyDollar[9].opt_body)
+			yyVAL.funcProc = createFunctionOrProcedure(PFTypeProcedure, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[8].opt_explicit_variables, yyDollar[9].opt_body)
 		}
 	case 11:
 		yyDollar = yyS[yypt-0 : yypt+1]
@@ -822,7 +822,7 @@ yydefault:
 		yyDollar = yyS[yypt-7 : yypt+1]
 //line .\grammar.y:161
 		{
-			yyVAL.stmt_if = IfStatement{
+			yyVAL.stmt_if = &IfStatement{
 				Expression:  yyDollar[2].expr,
 				TrueBlock:   yyDollar[4].opt_body,
 				IfElseBlock: yyDollar[5].opt_elseif_list,
@@ -833,7 +833,7 @@ yydefault:
 		yyDollar = yyS[yypt-0 : yypt+1]
 //line .\grammar.y:171
 		{
-			yyVAL.opt_elseif_list = []*IfStatement{}
+			yyVAL.opt_elseif_list = []Statement{}
 		}
 	case 23:
 		yyDollar = yyS[yypt-5 : yypt+1]
@@ -876,7 +876,7 @@ yydefault:
 		yyDollar = yyS[yypt-9 : yypt+1]
 //line .\grammar.y:193
 		{
-			yyVAL.stmt_loop = LoopStatement{
+			yyVAL.stmt_loop = &LoopStatement{
 				For:  yyDollar[3].token.literal,
 				In:   yyDollar[5].through_dot,
 				Body: yyDollar[8].opt_body,
@@ -893,7 +893,7 @@ yydefault:
 		yyDollar = yyS[yypt-8 : yypt+1]
 //line .\grammar.y:201
 		{
-			yyVAL.stmt_loop = LoopStatement{
+			yyVAL.stmt_loop = &LoopStatement{
 				For:  yyDollar[2].expr,
 				To:   yyDollar[4].expr,
 				Body: yyDollar[7].opt_body,
@@ -910,7 +910,7 @@ yydefault:
 		yyDollar = yyS[yypt-6 : yypt+1]
 //line .\grammar.y:209
 		{
-			yyVAL.stmt_loop = LoopStatement{
+			yyVAL.stmt_loop = &LoopStatement{
 				WhileExpr: yyDollar[2].expr,
 				Body:      yyDollar[5].opt_body,
 			}
@@ -1038,49 +1038,49 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:251
 		{
-			yyVAL.expr = ExpStatement{Operation: OpPlus, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpPlus, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 53:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:252
 		{
-			yyVAL.expr = ExpStatement{Operation: OpMinus, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpMinus, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 54:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:253
 		{
-			yyVAL.expr = ExpStatement{Operation: OpMul, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpMul, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 55:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:254
 		{
-			yyVAL.expr = ExpStatement{Operation: OpDiv, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpDiv, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 56:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:255
 		{
-			yyVAL.expr = ExpStatement{Operation: OpMod, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpMod, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 57:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:256
 		{
-			yyVAL.expr = ExpStatement{Operation: OpGt, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpGt, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 58:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:257
 		{
-			yyVAL.expr = ExpStatement{Operation: OpLt, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpLt, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 59:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:258
 		{
-			yyVAL.expr = ExpStatement{Operation: OpEq, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpEq, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 60:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -1092,31 +1092,31 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:260
 		{
-			yyVAL.expr = ExpStatement{Operation: OpOr, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpOr, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 62:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:261
 		{
-			yyVAL.expr = ExpStatement{Operation: OpAnd, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpAnd, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 63:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:262
 		{
-			yyVAL.expr = ExpStatement{Operation: OpNe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpNe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 64:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:263
 		{
-			yyVAL.expr = ExpStatement{Operation: OpLe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpLe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 65:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:264
 		{
-			yyVAL.expr = ExpStatement{Operation: OpGe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ExpStatement{Operation: OpGe, Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 66:
 		yyDollar = yyS[yypt-2 : yypt+1]

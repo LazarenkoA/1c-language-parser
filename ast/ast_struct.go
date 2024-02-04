@@ -4,9 +4,9 @@ type StatementType int
 type OperationType int
 
 const (
-	pfTypeUndefined StatementType = iota
-	pfTypeProcedure
-	pfTypeFunction
+	PFTypeUndefined StatementType = iota
+	PFTypeProcedure
+	PFTypeFunction
 )
 
 const (
@@ -14,7 +14,6 @@ const (
 	OpMinus
 	OpMul
 	OpDiv
-	// OpAssig // = (присвоение)
 	OpEq  // =
 	OpGt  // >
 	OpLt  // <
@@ -79,7 +78,7 @@ type ExpStatement struct {
 type IfStatement struct {
 	Expression  Statement
 	TrueBlock   []Statement
-	IfElseBlock []*IfStatement
+	IfElseBlock []Statement
 	ElseBlock   []Statement
 }
 
@@ -158,12 +157,12 @@ func (p *ParamStatement) DefaultValue(value Statement) *ParamStatement {
 	return p
 }
 
-func (e ExpStatement) Unary() interface{} {
+func (e *ExpStatement) Unary() interface{} {
 	e.unary = true
 	return e
 }
 
-func (e ExpStatement) Not() interface{} {
+func (e *ExpStatement) Not() interface{} {
 	e.not = true
 	return e
 }

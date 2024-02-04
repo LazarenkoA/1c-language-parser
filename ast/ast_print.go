@@ -49,10 +49,10 @@ func (p *astPrint) printFunctionOrProcedure(pf *FunctionOrProcedure) (result str
 	defer func() { result = builder.String() }()
 
 	declaration := ""
-	if pf.Type == pfTypeFunction {
+	if pf.Type == PFTypeFunction {
 		declaration = "Функция"
 		defer func() { builder.WriteString("\n\nКонецФункции") }()
-	} else if pf.Type == pfTypeProcedure {
+	} else if pf.Type == PFTypeProcedure {
 		declaration = "Процедура"
 		defer func() { builder.WriteString("\n\nКонецПроцедуры") }()
 	}
@@ -160,15 +160,15 @@ func (p *astPrint) printBodyItem(item Statement, depth int) (result string) {
 	builder.WriteString(spaces)
 
 	switch v := item.(type) {
-	case IfStatement:
-		builder.WriteString(p.printIfStatement(&v, depth))
+	case *IfStatement:
+		builder.WriteString(p.printIfStatement(v, depth))
 		builder.WriteString(";")
 		builder.WriteString("\n")
-	case ExpStatement:
+	case *ExpStatement:
 		builder.WriteString(p.printExpression(v))
 		builder.WriteString(";")
-	case LoopStatement:
-		builder.WriteString(p.printLoopStatement(&v, depth))
+	case *LoopStatement:
+		builder.WriteString(p.printLoopStatement(v, depth))
 		builder.WriteString(";")
 		builder.WriteString("\n")
 	case BreakStatement:
@@ -222,9 +222,9 @@ func (p *astPrint) printIfStatement(expr *IfStatement, depth int) (result string
 	for _, item := range expr.IfElseBlock {
 		builder.WriteString(spaces)
 		builder.WriteString("ИначеЕсли ")
-		builder.WriteString(p.printExpression(item.Expression))
+		builder.WriteString(p.printExpression(item.(*IfStatement).Expression))
 		builder.WriteString(" Тогда")
-		builder.WriteString(p.printBody(item.TrueBlock, depth+1))
+		builder.WriteString(p.printBody(item.(*IfStatement).TrueBlock, depth+1))
 	}
 
 	if expr.ElseBlock != nil {
@@ -277,7 +277,7 @@ func (p *astPrint) printExpression(expr Statement) (result string) {
 	defer func() { result = builder.String() }()
 
 	switch v := expr.(type) {
-	case ExpStatement:
+	case *ExpStatement:
 		if v.not {
 			builder.WriteString("Не ")
 		}

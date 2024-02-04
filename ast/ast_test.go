@@ -875,9 +875,9 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Operation)
-			assert.Equal(t, "f", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Left.(VarStatement).Name)
-			assert.Equal(t, "парапапапам", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(VarStatement).Name)
+			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Operation)
+			assert.Equal(t, "f", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Left.(VarStatement).Name)
+			assert.Equal(t, "парапапапам", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(VarStatement).Name)
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -890,8 +890,8 @@ func TestParseFunctionProcedure(t *testing.T) {
 			err := a.Parse()
 			fmt.Println(a.Print(&PrintConf{Margin: 2}))
 			assert.NoError(t, err)
-			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Operation)
-			assert.Equal(t, float64(221), a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(float64))
+			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Operation)
+			assert.Equal(t, float64(221), a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(float64))
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -902,7 +902,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-			assert.Equal(t, "вававава авава", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(string))
+			assert.Equal(t, "вававава авава", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(string))
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -913,7 +913,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-			assert.Equal(t, true, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(bool))
+			assert.Equal(t, true, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(bool))
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -924,7 +924,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-			assert.Equal(t, false, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(ExpStatement).Right.(bool))
+			assert.Equal(t, false, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(bool))
 		})
 		t.Run("bad directive", func(t *testing.T) {
 			code := `&НасервереБез
@@ -962,6 +962,8 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
+
+			// fmt.Println(a.Print(&PrintConf{Margin: 2}))
 		})
 		t.Run("return", func(t *testing.T) {
 			code := `Функция ПодключитьВнешнююОбработку(Ссылка, вы, выыыыы) 
@@ -1337,6 +1339,12 @@ func TestParseBaseExpression(t *testing.T) {
 
 func TestParseAST(t *testing.T) {
 	code := `Процедура ОткрытьНавигационнуюСсылку(НавигационнаяСсылка, Знач Оповещение = Неопределено) Экспорт
+
+Если КодСимвола < 1040 ИЛИ КодСимвола > 1103 И КодыДопустимыхСимволов.Найти(КодСимвола) = Неопределено И Не (Не УчитыватьРазделителиСлов И ЭтоРазделительСлов(КодСимвола)) Тогда
+            Возврат ;
+        КонецЕсли;
+
+
 МассивСтроки.Добавить(Новый ФорматированнаяСтрока(ЧастьСтроки.Значение, Новый Шрифт(,,Истина)));
 
 	Позиция = Найти(Строка, Разделитель);

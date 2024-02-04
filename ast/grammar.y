@@ -34,13 +34,13 @@ package ast
 
 %union {
     token Token
-    stmt_if IfStatement
-    opt_elseif_list []*IfStatement
+    stmt_if *IfStatement
+    opt_elseif_list []Statement
     opt_else []Statement
     stmt    Statement
     opt_stmt Statement
     stmt_tryCatch Statement
-    stmt_loop LoopStatement
+    stmt_loop *LoopStatement
     funcProc FunctionOrProcedure
     body []Statement
     opt_body []Statement
@@ -111,12 +111,12 @@ manyfuncProc: funcProc { $$ = []Statement{$1} }
 
 funcProc: opt_directive Function Identifier '(' declarations_method_params ')' opt_export { isFunction(true, yylex) } opt_explicit_variables opt_body EndFunction
         {  
-            $$ = createFunctionOrProcedure(pfTypeFunction, $1, $3.literal, $5, $7, $9, $10)
+            $$ = createFunctionOrProcedure(PFTypeFunction, $1, $3.literal, $5, $7, $9, $10)
             isFunction(false, yylex) 
         }
         | opt_directive Procedure Identifier '(' declarations_method_params ')' opt_export opt_explicit_variables opt_body EndProcedure
         { 
-            $$ = createFunctionOrProcedure(pfTypeProcedure, $1, $3.literal, $5, $7, $8, $9)
+            $$ = createFunctionOrProcedure(PFTypeProcedure, $1, $3.literal, $5, $7, $8, $9)
         }
 ;
 
@@ -159,7 +159,7 @@ explicit_variables: Var identifiers semicolon {
 
 /* Если Конецесли */
 stmt_if : If expr Then opt_body opt_elseif_list opt_else EndIf {  
-    $$ = IfStatement {
+    $$ = &IfStatement {
         Expression: $2,
         TrueBlock:  $4,
         IfElseBlock: $5,
@@ -168,7 +168,7 @@ stmt_if : If expr Then opt_body opt_elseif_list opt_else EndIf {
 };
 
 /* ИначеЕсли */
-opt_elseif_list : { $$ = []*IfStatement{} }
+opt_elseif_list : { $$ = []Statement{} }
         | ElseIf expr Then opt_body opt_elseif_list { 
              $$ = append($5, &IfStatement{
                 Expression: $2,
@@ -191,7 +191,7 @@ ternary: '?' '(' expr comma expr comma expr ')' {
 
 /* циклы */
 stmt_loop: For Each Identifier In through_dot Loop { setLoopFlag(true, yylex) } opt_body EndLoop { 
-    $$ = LoopStatement{
+    $$ = &LoopStatement{
         For: $3.literal,
         In: $5,
         Body: $8,
@@ -199,7 +199,7 @@ stmt_loop: For Each Identifier In through_dot Loop { setLoopFlag(true, yylex) } 
     setLoopFlag(false, yylex) 
 } 
 | For expr To expr Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
-     $$ = LoopStatement{
+     $$ = &LoopStatement{
         For: $2,
         To: $4,
         Body: $7,
@@ -207,7 +207,7 @@ stmt_loop: For Each Identifier In through_dot Loop { setLoopFlag(true, yylex) } 
     setLoopFlag(false, yylex)
 }
 |While expr Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
-    $$ = LoopStatement{
+    $$ = &LoopStatement{
         WhileExpr: $2,
         Body: $5,
     }
@@ -248,20 +248,20 @@ stmt_tryCatch: Try opt_body Catch { setTryFlag(true, yylex) } opt_body EndTry {
 /* выражения */
 expr : simple_expr { $$ = $1 }
     |'(' expr ')' { $$ = $2 }
-    | expr '+' expr { $$ = ExpStatement{Operation: OpPlus, Left: $1, Right: $3} }
-    | expr '-' expr { $$ = ExpStatement{Operation: OpMinus, Left: $1, Right: $3} }
-    | expr '*' expr { $$ = ExpStatement{Operation: OpMul, Left: $1, Right: $3} }
-    | expr '/' expr { $$ = ExpStatement{Operation: OpDiv, Left: $1, Right: $3} }
-    | expr '%' expr { $$ = ExpStatement{Operation: OpMod, Left: $1, Right: $3} }
-    | expr '>' expr { $$ = ExpStatement{Operation: OpGt, Left: $1, Right: $3} }
-    | expr '<' expr { $$ = ExpStatement{Operation: OpLt, Left: $1, Right: $3} }
-	| expr '=' expr { $$ = ExpStatement{Operation: OpEq, Left: $1, Right: $3 } }
+    | expr '+' expr { $$ = &ExpStatement{Operation: OpPlus, Left: $1, Right: $3} }
+    | expr '-' expr { $$ = &ExpStatement{Operation: OpMinus, Left: $1, Right: $3} }
+    | expr '*' expr { $$ = &ExpStatement{Operation: OpMul, Left: $1, Right: $3} }
+    | expr '/' expr { $$ = &ExpStatement{Operation: OpDiv, Left: $1, Right: $3} }
+    | expr '%' expr { $$ = &ExpStatement{Operation: OpMod, Left: $1, Right: $3} }
+    | expr '>' expr { $$ = &ExpStatement{Operation: OpGt, Left: $1, Right: $3} }
+    | expr '<' expr { $$ = &ExpStatement{Operation: OpLt, Left: $1, Right: $3} }
+	| expr '=' expr { $$ = &ExpStatement{Operation: OpEq, Left: $1, Right: $3 } }
     | '-' expr %prec UNARY { $$ = unary($2) }
-    | expr Or expr {  $$ = ExpStatement{Operation: OpOr, Left: $1, Right: $3 } } 
-    | expr And expr { $$ = ExpStatement{Operation: OpAnd, Left: $1, Right: $3 } } 
-    | expr NeEq expr { $$ = ExpStatement{Operation: OpNe, Left: $1, Right: $3 } }
-    | expr Le expr { $$ = ExpStatement{Operation: OpLe, Left: $1, Right: $3 } }
-    | expr Ge expr { $$ = ExpStatement{Operation: OpGe, Left: $1, Right: $3 } }
+    | expr Or expr {  $$ = &ExpStatement{Operation: OpOr, Left: $1, Right: $3 } } 
+    | expr And expr { $$ = &ExpStatement{Operation: OpAnd, Left: $1, Right: $3 } } 
+    | expr NeEq expr { $$ = &ExpStatement{Operation: OpNe, Left: $1, Right: $3 } }
+    | expr Le expr { $$ = &ExpStatement{Operation: OpLe, Left: $1, Right: $3 } }
+    | expr Ge expr { $$ = &ExpStatement{Operation: OpGe, Left: $1, Right: $3 } }
     | Not expr { $$ = not($2) }
     | new_object { $$ = $1 } 
 ;
