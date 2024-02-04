@@ -224,7 +224,7 @@ stmt : expr { $$ = $1 }
 ;
 
 opt_param: { $$ = nil } 
-            | simple_expr { $$ = $1 }
+            | expr { $$ = $1 }
 ;
 
 

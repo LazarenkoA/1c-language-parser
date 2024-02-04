@@ -186,7 +186,7 @@ func (p *astPrint) printBodyItem(item Statement, depth int) (result string) {
 		builder.WriteString("ВызватьИсключение")
 		if v.Param != nil {
 			builder.WriteString(" ")
-			builder.WriteString(p.printVarStatement(v.Param))
+			builder.WriteString(p.printExpression(v.Param))
 		}
 		builder.WriteString(";")
 	case ReturnStatement:
@@ -319,7 +319,7 @@ func (p *astPrint) printCallChainStatement(call Statement) (result string) {
 		if v.Call != nil {
 			return p.printCallChainStatement(v.Call) + "." + p.printVarStatement(v.Unit)
 		}
-	case VarStatement, ItemStatement:
+	case VarStatement, ItemStatement, MethodStatement:
 		return p.printVarStatement(call)
 	}
 

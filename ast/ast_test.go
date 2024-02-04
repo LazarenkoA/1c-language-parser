@@ -1140,21 +1140,26 @@ func TestParseFunctionProcedure(t *testing.T) {
 		t.Run("with region", func(t *testing.T) {
 			code := `#Область ПрограммныйИнтерфейс
 					&НасервереБезКонтекста
-					Процедура ПодключитьВнешнююОбработку() 
+					Процедура ПодключитьВнешнююОбработку()
+						ТипЗначенияСтрокой = XMLТипЗнч(КлючДанных).ИмяТипа;
 
 					КонецПроцедуры
 					#КонецОбласти
 
 					#Область СлужебныеПроцедурыИФункции
 					&НасервереБезКонтекста
-						Процедура ПодключитьВнешнююОбработку() 
-	
-						КонецПроцедуры
+						Функция ПодключитьВнешнююОбработку() 
+							ВызватьИсключение "Нет соответствия шаблону! " + СтрокаТекста;
+
+						КонецФункции
 					#КонецОбласти`
 
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
+
+			p := a.Print(&PrintConf{Margin: 4})
+			fmt.Println(p)
 		})
 		t.Run("through_dot pass", func(t *testing.T) {
 			code := `Процедура ЗагрузитьОбъекты(Задание, Отказ = Ложь) Экспорт
@@ -1417,8 +1422,8 @@ func TestBigProcedure(t *testing.T) {
 	fmt.Println("milliseconds -", time.Since(s).Milliseconds())
 	assert.NoError(t, err)
 
-	// p := a.Print(&PrintConf{Margin: 4})
-	// fmt.Println(p)
+	p := a.Print(&PrintConf{Margin: 4})
+	fmt.Println(p)
 }
 
 func TestTernaryOperator(t *testing.T) {
