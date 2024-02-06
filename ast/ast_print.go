@@ -29,6 +29,15 @@ func (ast *AstNode) Print(conf *PrintConf) string {
 	return p.print()
 }
 
+func (ast *AstNode) PrintStatement(stat Statement, conf *PrintConf) string {
+	if stat == nil {
+		return ""
+	}
+
+	p := &astPrint{conf: conf}
+	return p.printBodyItem(stat, 0)
+}
+
 func (p *astPrint) print() string {
 	if len(p.ast.ModuleStatement.Body) == 0 {
 		return ""
@@ -36,8 +45,8 @@ func (p *astPrint) print() string {
 
 	result := ""
 	for _, node := range p.ast.ModuleStatement.Body {
-		if pf, ok := node.(FunctionOrProcedure); ok {
-			result += p.printFunctionOrProcedure(&pf) + "\n\n\n"
+		if pf, ok := node.(*FunctionOrProcedure); ok {
+			result += p.printFunctionOrProcedure(pf) + "\n\n\n"
 		}
 	}
 

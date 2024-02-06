@@ -875,9 +875,9 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Operation)
-			assert.Equal(t, "f", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Left.(VarStatement).Name)
-			assert.Equal(t, "парапапапам", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(VarStatement).Name)
+			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Operation)
+			assert.Equal(t, "f", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Left.(VarStatement).Name)
+			assert.Equal(t, "парапапапам", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(VarStatement).Name)
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -890,8 +890,8 @@ func TestParseFunctionProcedure(t *testing.T) {
 			err := a.Parse()
 			fmt.Println(a.Print(&PrintConf{Margin: 2}))
 			assert.NoError(t, err)
-			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Operation)
-			assert.Equal(t, float64(221), a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(float64))
+			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Operation)
+			assert.Equal(t, float64(221), a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(float64))
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -902,7 +902,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-			assert.Equal(t, "вававава авава", a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(string))
+			assert.Equal(t, "вававава авава", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(string))
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -913,7 +913,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-			assert.Equal(t, true, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(bool))
+			assert.Equal(t, true, a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(bool))
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -924,7 +924,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-			assert.Equal(t, false, a.ModuleStatement.Body[0].(FunctionOrProcedure).Body[0].(*ExpStatement).Right.(bool))
+			assert.Equal(t, false, a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(bool))
 		})
 		t.Run("bad directive", func(t *testing.T) {
 			code := `&НасервереБез
@@ -1068,7 +1068,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-			assert.Equal(t, 3, len(a.ModuleStatement.Body[0].(FunctionOrProcedure).ExplicitVariables))
+			assert.Equal(t, 3, len(a.ModuleStatement.Body[0].(*FunctionOrProcedure).ExplicitVariables))
 		})
 		t.Run("with var error", func(t *testing.T) {
 			code := `Процедура ПодключитьВнешнююОбработку(Ссылка) 
@@ -1204,17 +1204,17 @@ func TestParseFunctionProcedure(t *testing.T) {
 			assert.Equal(t, 3, len(a.ModuleStatement.Body))
 		}
 		if !t.Failed() {
-			assert.Equal(t, "ПодключитьВнешнююОбработку", a.ModuleStatement.Body[0].(FunctionOrProcedure).Name)
-			assert.Equal(t, "ОчиститьПараметрыТЖ", a.ModuleStatement.Body[1].(FunctionOrProcedure).Name)
-			assert.Equal(t, "ПарамТарам", a.ModuleStatement.Body[2].(FunctionOrProcedure).Name)
+			assert.Equal(t, "ПодключитьВнешнююОбработку", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Name)
+			assert.Equal(t, "ОчиститьПараметрыТЖ", a.ModuleStatement.Body[1].(*FunctionOrProcedure).Name)
+			assert.Equal(t, "ПарамТарам", a.ModuleStatement.Body[2].(*FunctionOrProcedure).Name)
 
-			assert.Equal(t, 0, len(a.ModuleStatement.Body[0].(FunctionOrProcedure).Params))
-			assert.Equal(t, 2, len(a.ModuleStatement.Body[1].(FunctionOrProcedure).Params))
-			assert.Equal(t, 1, len(a.ModuleStatement.Body[2].(FunctionOrProcedure).Params))
+			assert.Equal(t, 0, len(a.ModuleStatement.Body[0].(*FunctionOrProcedure).Params))
+			assert.Equal(t, 2, len(a.ModuleStatement.Body[1].(*FunctionOrProcedure).Params))
+			assert.Equal(t, 1, len(a.ModuleStatement.Body[2].(*FunctionOrProcedure).Params))
 
-			assert.Equal(t, "&Насервере", a.ModuleStatement.Body[0].(FunctionOrProcedure).Directive)
-			assert.Equal(t, "&НаКлиенте", a.ModuleStatement.Body[1].(FunctionOrProcedure).Directive)
-			assert.Equal(t, "", a.ModuleStatement.Body[2].(FunctionOrProcedure).Directive)
+			assert.Equal(t, "&Насервере", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Directive)
+			assert.Equal(t, "&НаКлиенте", a.ModuleStatement.Body[1].(*FunctionOrProcedure).Directive)
+			assert.Equal(t, "", a.ModuleStatement.Body[2].(*FunctionOrProcedure).Directive)
 		}
 	})
 }
@@ -1414,6 +1414,9 @@ func TestParseAST(t *testing.T) {
 	p := a.Print(&PrintConf{Margin: 4})
 	// fmt.Println(p)
 	assert.Equal(t, true, compareHashes(code, p))
+
+	// sIf := a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0]
+	// fmt.Println(a.PrintStatement(sIf, &PrintConf{Margin: 4}))
 }
 
 func TestBigProcedure(t *testing.T) {

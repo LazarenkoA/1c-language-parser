@@ -124,8 +124,8 @@ func setTryFlag(flag bool, yylex yyLexer) {
 	}
 }
 
-func createFunctionOrProcedure(Type StatementType, directive Statement, name string, params []ParamStatement, export Statement, variables map[string]VarStatement, body []Statement) FunctionOrProcedure {
-	result := FunctionOrProcedure{
+func createFunctionOrProcedure(Type StatementType, directive Statement, name string, params []ParamStatement, export Statement, variables map[string]VarStatement, body []Statement) *FunctionOrProcedure {
+	result := &FunctionOrProcedure{
 		Type:              Type,
 		Name:              name,
 		Body:              body,

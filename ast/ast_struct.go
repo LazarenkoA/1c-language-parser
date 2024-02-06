@@ -35,6 +35,8 @@ type INot interface {
 
 type Statement interface{}
 
+// type Statements []Statement
+
 type ModuleStatement struct {
 	Name string
 	Body []Statement
@@ -74,6 +76,11 @@ type ExpStatement struct {
 	Left      interface{}
 	Right     interface{}
 }
+
+// type IfElseStatement struct {
+// 	Expression Statement
+// 	TrueBlock  []Statement
+// }
 
 type IfStatement struct {
 	Expression  Statement
@@ -223,4 +230,33 @@ func (o OperationType) String() string {
 	default:
 		return ""
 	}
+}
+
+func (m ModuleStatement) Walk(callBack func(statement *Statement)) {
+	walkHelper(m.Body, callBack)
+}
+
+// func (m Statements) Walk(callBack func(statement *Statement)) {
+// 	walkHelper(m, callBack)
+// }
+
+func walkHelper(statements []Statement, callBack func(statement *Statement)) {
+	for _, item := range statements {
+		switch v := item.(type) {
+		case *IfStatement:
+			walkHelper(v.TrueBlock, callBack)
+			walkHelper(v.ElseBlock, callBack)
+			walkHelper(v.IfElseBlock, callBack)
+		case TryStatement:
+			walkHelper(v.Body, callBack)
+			walkHelper(v.Catch, callBack)
+		case *LoopStatement:
+			walkHelper(v.Body, callBack)
+		case *FunctionOrProcedure:
+			walkHelper(v.Body, callBack)
+		}
+
+		callBack(&item)
+	}
+
 }

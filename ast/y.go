@@ -19,7 +19,7 @@ type yySymType struct {
 	opt_stmt                   Statement
 	stmt_tryCatch              Statement
 	stmt_loop                  *LoopStatement
-	funcProc                   FunctionOrProcedure
+	funcProc                   *FunctionOrProcedure
 	body                       []Statement
 	opt_body                   []Statement
 	opt_param                  Statement
