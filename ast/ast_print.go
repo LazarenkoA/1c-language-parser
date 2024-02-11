@@ -208,6 +208,9 @@ func (p *astPrint) printBodyItem(item Statement, depth int) (result string) {
 	case MethodStatement:
 		builder.WriteString(p.printVarStatement(v))
 		builder.WriteString(";")
+	case GoToStatement, *GoToLabelStatement:
+		builder.WriteString(p.printGoTo(v, depth))
+		builder.WriteString("\n")
 	}
 
 	return
@@ -359,6 +362,29 @@ func (p *astPrint) printTryStatement(try TryStatement, depth int) (result string
 		builder.WriteString(p.printBody(try.Catch, depth+1))
 	} else {
 		builder.WriteString("\n")
+	}
+
+	return
+}
+
+func (p *astPrint) printGoTo(gotoStat Statement, depth int) (result string) {
+	builder := strings.Builder{}
+	defer func() { result = builder.String() }()
+
+	// spaces := strings.Repeat(" ", p.conf.Margin*depth)
+
+	switch v := gotoStat.(type) {
+	case *GoToLabelStatement:
+		// builder.WriteString(spaces)
+		builder.WriteString("~")
+		builder.WriteString(v.Name)
+		builder.WriteString(":")
+	case GoToStatement:
+		// builder.WriteString(spaces)
+		builder.WriteString("Перейти ")
+		builder.WriteString("~")
+		builder.WriteString(v.Label.Name)
+		builder.WriteString(";")
 	}
 
 	return

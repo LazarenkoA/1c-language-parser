@@ -298,6 +298,30 @@ func Test_Next(t *testing.T) {
 			assert.Equal(t, token, result[tok.literal])
 		}
 	})
+
+	t.Run("goto", func(t *testing.T) {
+		tok := new(Token)
+		code := `Процедура ДобавитьРегистрНаСервере()
+				перейти ~метка;
+				~метка:
+				КонецПроцедуры`
+
+		result := map[string]int{
+			"Процедура": Procedure,
+			"ДобавитьРегистрНаСервере": Identifier,
+			"КонецПроцедуры":           EndProcedure,
+			"(":                        '(',
+			")":                        ')',
+			"перейти":                  GoTo,
+			"метка":                    GoToLabel,
+			";":                        ';',
+			":":                        ':',
+		}
+
+		for token, err := tok.Next(code); err == nil && token > 0; token, err = tok.Next(code) {
+			assert.Equal(t, token, result[tok.literal])
+		}
+	})
 }
 
 func Benchmark(b *testing.B) {

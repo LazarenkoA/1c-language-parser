@@ -25,6 +25,7 @@ type Token struct {
 	position Position
 	literal  string
 	value    interface{}
+	prevDot  bool
 }
 
 const (
@@ -36,6 +37,7 @@ var (
 	tokens = map[string]int{
 		"процедура":         Procedure,
 		"перем":             Var,
+		"перейти":           GoTo,
 		"конецпроцедуры":    EndProcedure,
 		"знач":              ValueParam,
 		"если":              If,
@@ -90,7 +92,6 @@ func (t *Token) Next(srs string) (token int, err error) {
 	switch token {
 	case Number:
 		t.value, err = strconv.ParseFloat(t.literal, 64)
-	//	t.value, _ = strconv.ParseInt(t.literal, 10, 64)
 	case String:
 		t.value = t.literal
 	case Date:
@@ -111,6 +112,10 @@ func (t *Token) next() (int, string, error) {
 	t.skipComment()
 	t.skipRegions()
 
+	if t.prevDot {
+		defer func() { t.prevDot = false }()
+	}
+
 	switch let := t.currentLet(); {
 	case isLetter(let):
 		literal, err := t.scanIdentifier()
@@ -119,7 +124,7 @@ func (t *Token) next() (int, string, error) {
 		}
 
 		lowLit := fastToLower(literal)
-		if tName, ok := tokens[lowLit]; ok {
+		if tName, ok := tokens[lowLit]; ok && !t.prevDot {
 			return tName, literal, nil
 		} else {
 			return Identifier, literal, nil
@@ -148,7 +153,7 @@ func (t *Token) next() (int, string, error) {
 		}
 
 		return Date, literal, nil
-	case let == '=' || let == '-' || let == '+' || let == '*' || let == '/' || let == '(' || let == '?' || let == ')' || let == '[' || let == ']' || let == ':' || let == ';' || let == '.' || let == ',' || let == '%':
+	case let == '=' || let == '-' || let == '+' || let == '*' || let == '/' || let == '(' || let == '?' || let == ')' || let == '[' || let == ']' || let == ':' || let == ';' || let == ',' || let == '%':
 		t.nextPos()
 		return int(let), string(let), nil
 	case let == '<':
@@ -179,6 +184,14 @@ func (t *Token) next() (int, string, error) {
 	// if err != nil {
 	// 	return EOF, emptyLit, err
 	// }
+	case let == '.':
+		// если после точки у нас следует идентификатор то нам нужно читать его обычным идентификатором
+		// Могут быть таие случаи стр.Истина = 1 или стр.Функция = 2 (стр в данном случае какой-то объект, например структура)
+		// нам нужно что бы то что следует после точки считалось Identifier, а не определенным зарезервированным токеном
+		t.prevDot = true
+
+		t.nextPos()
+		return int(let), string(let), nil
 	case let == '&':
 		t.nextPos()
 		pos := t.offset
@@ -195,6 +208,13 @@ func (t *Token) next() (int, string, error) {
 			t.offset = pos
 			return int(let), string(let), fmt.Errorf(`syntax error %q`, string(let))
 		}
+	case let == '~':
+		t.nextPos()
+		literal, err := t.scanIdentifier()
+		if err != nil {
+			return EOF, emptyLit, err
+		}
+		return GoToLabel, literal, err
 	default:
 		switch let {
 		case EOF:

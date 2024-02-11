@@ -30,6 +30,12 @@ package ast
 %type<identifiers> identifiers
 %type<stmt_tryCatch> stmt_tryCatch
 %type<identifier> identifier
+%type<goToLabel> goToLabel
+%type<token> separator
+%type<token> semicolon
+%type<token> colon
+%type<token> ':'
+%type<token> ';'
 
 
 %union {
@@ -62,10 +68,13 @@ package ast
     opt_explicit_variables map[string]VarStatement
     identifiers []Token
     identifier Statement
+    goToLabel *GoToLabelStatement
+    opt_goToLabel *GoToLabelStatement
+
 }
 
-%token<token> Directive Identifier Procedure Var EndProcedure If Then ElseIf Else EndIf For Each In To Loop EndLoop Break Not ValueParam While
-%token<token> Continue Try Catch EndTry Number String New Function EndFunction Return Throw NeEq Le Ge Or And True False Undefind Export Date
+%token<token> Directive Identifier Procedure Var EndProcedure If Then ElseIf Else EndIf For Each In To Loop EndLoop Break Not ValueParam While GoToLabel
+%token<token> Continue Try Catch EndTry Number String New Function EndFunction Return Throw NeEq Le Ge Or And True False Undefind Export Date GoTo
 
 
 //%right '='
@@ -125,16 +134,25 @@ opt_body: { $$ = nil }
 ;
     
 body: stmt { $$ = []Statement{$1} }
-    | body semicolon opt_stmt { 
+    | body separator opt_stmt { 
+        if $2.literal == ":" && len($1) > 0 {
+            if _, ok := $1[len($1)-1].(*GoToLabelStatement); !ok {
+                yylex.Error("semicolon (;) is expected")
+            }
+        }
         if $3 != nil {
             $$ = append($$, $3) 
         }
     }
+    
 ;
 
 opt_stmt: { $$ = nil }
         | stmt { $$ = $1 }
 ;
+
+separator: semicolon { $$ = $1} | colon { $$ = $1};
+
 
 /* переменные */ 
 opt_explicit_variables: { $$ = map[string]VarStatement{} }
@@ -264,6 +282,7 @@ expr : simple_expr { $$ = $1 }
     | expr Ge expr { $$ = &ExpStatement{Operation: OpGe, Left: $1, Right: $3 } }
     | Not expr { $$ = not($2) }
     | new_object { $$ = $1 } 
+    | GoTo goToLabel { $$ = GoToStatement{ Label: $2 } }
 ;
 
 opt_expr: { $$ = nil } | expr { $$ = $1 };
@@ -290,6 +309,7 @@ simple_expr:  String { $$ = $1.value  }
             | False { $$ =  $1.value  }
             | Date { $$ =  $1.value  }
             | Undefind { $$ = UndefinedStatement{} }
+            | goToLabel { $$ = $1}
             | through_dot { 
                 if tok, ok := $1.(Token); ok {
                     $$ = tok.literal
@@ -300,6 +320,8 @@ simple_expr:  String { $$ = $1.value  }
             | ternary { $$ =  $1  } // тернарный оператор
 ;
 
+goToLabel: GoToLabel { $$ = &GoToLabelStatement{ Name: $1.literal } }
+
 exprs : opt_expr {$$ = []Statement{$1} }
 	| exprs comma opt_expr { $$ = append($$, $3);  }
 ;    
@@ -308,8 +330,9 @@ identifiers: Identifier { $$ = []Token{$1} }
         | identifiers comma Identifier {$$ = append($$, $3) }
 ;
 
-semicolon: ';' 
-comma: ','
-dot: '.'
+semicolon: ';' {$$ = $1};
+colon: ':'{$$ = $1};
+comma: ',';
+dot: '.';
 
 %%

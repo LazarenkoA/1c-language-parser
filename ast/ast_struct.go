@@ -148,6 +148,14 @@ type ItemStatement struct {
 	Object Statement
 }
 
+type GoToStatement struct {
+	Label *GoToLabelStatement
+}
+
+type GoToLabelStatement struct {
+	Name string
+}
+
 func (p *ParamStatement) Fill(valueParam *Token, identifier Token) *ParamStatement {
 	p.IsValue = valueParam != nil
 	p.Name = identifier.literal

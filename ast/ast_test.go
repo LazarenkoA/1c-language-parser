@@ -1340,10 +1340,14 @@ func TestParseBaseExpression(t *testing.T) {
 func TestParseAST(t *testing.T) {
 	code := `Процедура ОткрытьНавигационнуюСсылку(НавигационнаяСсылка, Знач Оповещение = Неопределено) Экспорт
 
+     стр = новый Структура("Цикл", 1);
+     стр.Цикл = 0; 
+
 Если КодСимвола < 1040 ИЛИ КодСимвола > 1103 И КодыДопустимыхСимволов.Найти(КодСимвола) = Неопределено И Не (Не УчитыватьРазделителиСлов И ЭтоРазделительСлов(КодСимвола)) Тогда
             Возврат ;
         КонецЕсли;
 
+перейти ~метка;
 
 МассивСтроки.Добавить(Новый ФорматированнаяСтрока(ЧастьСтроки.Значение, Новый Шрифт(,,Истина)));
 
@@ -1361,6 +1365,7 @@ func TestParseAST(t *testing.T) {
 		Позиция = Найти(Строка, Разделитель);
 	КонецЦикла;
 
+~метка:
 
 вуцуцу = Дата('00010101');
 
@@ -1414,9 +1419,6 @@ func TestParseAST(t *testing.T) {
 	p := a.Print(&PrintConf{Margin: 4})
 	// fmt.Println(p)
 	assert.Equal(t, true, compareHashes(code, p))
-
-	// sIf := a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0]
-	// fmt.Println(a.PrintStatement(sIf, &PrintConf{Margin: 4}))
 }
 
 func TestBigProcedure(t *testing.T) {
@@ -1433,8 +1435,8 @@ func TestBigProcedure(t *testing.T) {
 	fmt.Println("milliseconds -", time.Since(s).Milliseconds())
 	assert.NoError(t, err)
 
-	p := a.Print(&PrintConf{Margin: 4})
-	fmt.Println(p)
+	// p := a.Print(&PrintConf{Margin: 4})
+	// fmt.Println(p)
 }
 
 func TestTernaryOperator(t *testing.T) {
