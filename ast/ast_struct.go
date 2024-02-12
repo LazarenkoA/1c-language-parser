@@ -240,31 +240,32 @@ func (o OperationType) String() string {
 	}
 }
 
-func (m ModuleStatement) Walk(callBack func(statement *Statement)) {
-	walkHelper(m.Body, callBack)
+func (m ModuleStatement) Walk(callBack func(current *FunctionOrProcedure, statement *Statement)) {
+	walkHelper(nil, m.Body, callBack)
 }
 
 // func (m Statements) Walk(callBack func(statement *Statement)) {
 // 	walkHelper(m, callBack)
 // }
 
-func walkHelper(statements []Statement, callBack func(statement *Statement)) {
+func walkHelper(parent *FunctionOrProcedure, statements []Statement, callBack func(current *FunctionOrProcedure, statement *Statement)) {
 	for _, item := range statements {
 		switch v := item.(type) {
 		case *IfStatement:
-			walkHelper(v.TrueBlock, callBack)
-			walkHelper(v.ElseBlock, callBack)
-			walkHelper(v.IfElseBlock, callBack)
+			walkHelper(parent, v.TrueBlock, callBack)
+			walkHelper(parent, v.ElseBlock, callBack)
+			walkHelper(parent, v.IfElseBlock, callBack)
 		case TryStatement:
-			walkHelper(v.Body, callBack)
-			walkHelper(v.Catch, callBack)
+			walkHelper(parent, v.Body, callBack)
+			walkHelper(parent, v.Catch, callBack)
 		case *LoopStatement:
-			walkHelper(v.Body, callBack)
+			walkHelper(parent, v.Body, callBack)
 		case *FunctionOrProcedure:
-			walkHelper(v.Body, callBack)
+			walkHelper(v, v.Body, callBack)
+			parent = v
 		}
 
-		callBack(&item)
+		callBack(parent, &item)
 	}
 
 }

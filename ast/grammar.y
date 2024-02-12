@@ -238,7 +238,7 @@ stmt : expr { $$ = $1 }
     | Continue { $$ = ContinueStatement{}; checkLoopOperator($1, yylex) }
     | Break { $$ = BreakStatement{}; checkLoopOperator($1, yylex) }
     | Throw opt_param { $$ = ThrowStatement{ Param: $2 }; checkThrowParam($1, $2, yylex) }
-    | Return opt_expr { $$ = ReturnStatement{ Param: $2 }; checkReturnParam($2, yylex) }
+    | Return opt_expr { $$ = &ReturnStatement{ Param: $2 }; checkReturnParam($2, yylex) }
 ;
 
 opt_param: { $$ = nil } 

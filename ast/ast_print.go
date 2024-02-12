@@ -9,18 +9,19 @@ import (
 
 type PrintConf struct {
 	// Margin отступы (количество пробелов)
-	Margin int
+	Margin  int
+	OneLine bool
 
 	// автоматически расставить скобки в выражениях
 	// LispStyle bool
 }
 
 type astPrint struct {
-	conf *PrintConf
+	conf PrintConf
 	ast  *AstNode
 }
 
-func (ast *AstNode) Print(conf *PrintConf) string {
+func (ast *AstNode) Print(conf PrintConf) string {
 	if ast == nil {
 		return ""
 	}
@@ -29,7 +30,7 @@ func (ast *AstNode) Print(conf *PrintConf) string {
 	return p.print()
 }
 
-func (ast *AstNode) PrintStatement(stat Statement, conf *PrintConf) string {
+func (ast *AstNode) PrintStatement(stat Statement, conf PrintConf) string {
 	if stat == nil {
 		return ""
 	}
@@ -46,7 +47,7 @@ func (p *astPrint) print() string {
 	result := ""
 	for _, node := range p.ast.ModuleStatement.Body {
 		if pf, ok := node.(*FunctionOrProcedure); ok {
-			result += p.printFunctionOrProcedure(pf) + "\n\n\n"
+			result += p.printFunctionOrProcedure(pf) + p.newLine(3)
 		}
 	}
 
@@ -60,10 +61,10 @@ func (p *astPrint) printFunctionOrProcedure(pf *FunctionOrProcedure) (result str
 	declaration := ""
 	if pf.Type == PFTypeFunction {
 		declaration = "Функция"
-		defer func() { builder.WriteString("\n\nКонецФункции") }()
+		defer func() { builder.WriteString(p.newLine(2)); builder.WriteString("КонецФункции") }()
 	} else if pf.Type == PFTypeProcedure {
 		declaration = "Процедура"
-		defer func() { builder.WriteString("\n\nКонецПроцедуры") }()
+		defer func() { builder.WriteString(p.newLine(2)); builder.WriteString("КонецПроцедуры") }()
 	}
 
 	var params []string
@@ -102,7 +103,7 @@ func (p *astPrint) printFunctionOrProcedure(pf *FunctionOrProcedure) (result str
 	builder.WriteString(")")
 	builder.WriteString(" ")
 	builder.WriteString(export)
-	builder.WriteString("\n")
+	builder.WriteString(p.newLine(1))
 	builder.WriteString(p.printBody(pf.Body, depth))
 
 	return
@@ -153,11 +154,11 @@ func (p *astPrint) printBody(items []Statement, depth int) (result string) {
 	defer func() { result = builder.String() }()
 
 	for _, item := range items {
-		builder.WriteString("\n")
+		builder.WriteString(p.newLine(1))
 		builder.WriteString(p.printBodyItem(item, depth))
 	}
 
-	builder.WriteString("\n")
+	builder.WriteString(p.newLine(1))
 	return
 }
 
@@ -172,14 +173,14 @@ func (p *astPrint) printBodyItem(item Statement, depth int) (result string) {
 	case *IfStatement:
 		builder.WriteString(p.printIfStatement(v, depth))
 		builder.WriteString(";")
-		builder.WriteString("\n")
+		builder.WriteString(p.newLine(1))
 	case *ExpStatement:
 		builder.WriteString(p.printExpression(v))
 		builder.WriteString(";")
 	case *LoopStatement:
 		builder.WriteString(p.printLoopStatement(v, depth))
 		builder.WriteString(";")
-		builder.WriteString("\n")
+		builder.WriteString(p.newLine(1))
 	case BreakStatement:
 		builder.WriteString("Прервать;")
 	case ContinueStatement:
@@ -190,7 +191,7 @@ func (p *astPrint) printBodyItem(item Statement, depth int) (result string) {
 	case TryStatement:
 		builder.WriteString(p.printTryStatement(v, depth))
 		builder.WriteString(";")
-		builder.WriteString("\n")
+		builder.WriteString(p.newLine(1))
 	case ThrowStatement:
 		builder.WriteString("ВызватьИсключение")
 		if v.Param != nil {
@@ -198,19 +199,19 @@ func (p *astPrint) printBodyItem(item Statement, depth int) (result string) {
 			builder.WriteString(p.printExpression(v.Param))
 		}
 		builder.WriteString(";")
-	case ReturnStatement:
+	case *ReturnStatement:
 		builder.WriteString("Возврат")
 		if v.Param != nil {
 			builder.WriteString(" ")
 			builder.WriteString(p.printExpression(v.Param))
 		}
 		builder.WriteString(";")
-	case MethodStatement:
-		builder.WriteString(p.printVarStatement(v))
-		builder.WriteString(";")
 	case GoToStatement, *GoToLabelStatement:
 		builder.WriteString(p.printGoTo(v, depth))
-		builder.WriteString("\n")
+		builder.WriteString(p.newLine(1))
+	default:
+		builder.WriteString(p.printVarStatement(v))
+		builder.WriteString(";")
 	}
 
 	return
@@ -228,20 +229,20 @@ func (p *astPrint) printIfStatement(expr *IfStatement, depth int) (result string
 
 	builder.WriteString("Если ")
 	builder.WriteString(p.printExpression(expr.Expression))
-	builder.WriteString(" Тогда")
+	builder.WriteString(" Тогда ")
 
 	builder.WriteString(p.printBody(expr.TrueBlock, depth+1))
 	for _, item := range expr.IfElseBlock {
 		builder.WriteString(spaces)
 		builder.WriteString("ИначеЕсли ")
 		builder.WriteString(p.printExpression(item.(*IfStatement).Expression))
-		builder.WriteString(" Тогда")
+		builder.WriteString(" Тогда ")
 		builder.WriteString(p.printBody(item.(*IfStatement).TrueBlock, depth+1))
 	}
 
 	if expr.ElseBlock != nil {
 		builder.WriteString(spaces)
-		builder.WriteString("Иначе")
+		builder.WriteString("Иначе ")
 		builder.WriteString(p.printBody(expr.ElseBlock, depth+1))
 	}
 
@@ -256,7 +257,7 @@ func (p *astPrint) printLoopStatement(loop *LoopStatement, depth int) (result st
 	if loop.WhileExpr != nil {
 		builder.WriteString("Пока ")
 		builder.WriteString(p.printExpression(loop.WhileExpr))
-		builder.WriteString(" Цикл")
+		builder.WriteString(" Цикл ")
 	} else {
 		builder.WriteString("Для ")
 	}
@@ -270,13 +271,13 @@ func (p *astPrint) printLoopStatement(loop *LoopStatement, depth int) (result st
 		builder.WriteString(loop.For.(string))
 		builder.WriteString(" Из ")
 		builder.WriteString(p.printExpression(loop.In))
-		builder.WriteString(" Цикл")
+		builder.WriteString(" Цикл ")
 	}
 	if loop.To != nil {
 		builder.WriteString(p.printExpression(loop.For))
 		builder.WriteString(" По ")
 		builder.WriteString(p.printExpression(loop.To))
-		builder.WriteString(" Цикл")
+		builder.WriteString(" Цикл ")
 	}
 
 	builder.WriteString(p.printBody(loop.Body, depth+1))
@@ -353,7 +354,7 @@ func (p *astPrint) printTryStatement(try TryStatement, depth int) (result string
 	if try.Body != nil {
 		builder.WriteString(p.printBody(try.Body, depth+1))
 	} else {
-		builder.WriteString("\n")
+		builder.WriteString(p.newLine(1))
 	}
 
 	builder.WriteString(spaces)
@@ -361,7 +362,7 @@ func (p *astPrint) printTryStatement(try TryStatement, depth int) (result string
 	if try.Catch != nil {
 		builder.WriteString(p.printBody(try.Catch, depth+1))
 	} else {
-		builder.WriteString("\n")
+		builder.WriteString(p.newLine(1))
 	}
 
 	return
@@ -388,4 +389,12 @@ func (p *astPrint) printGoTo(gotoStat Statement, depth int) (result string) {
 	}
 
 	return
+}
+
+func (p *astPrint) newLine(count int) string {
+	if p.conf.OneLine {
+		return ""
+	}
+
+	return strings.Repeat("\n", count)
 }

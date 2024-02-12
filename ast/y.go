@@ -989,7 +989,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line .\grammar.y:241
 		{
-			yyVAL.stmt = ReturnStatement{Param: yyDollar[2].opt_expr}
+			yyVAL.stmt = &ReturnStatement{Param: yyDollar[2].opt_expr}
 			checkReturnParam(yyDollar[2].opt_expr, yylex)
 		}
 	case 43:
