@@ -888,7 +888,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			fmt.Println(a.Print(&PrintConf{Margin: 2}))
+			fmt.Println(a.Print(PrintConf{Margin: 2}))
 			assert.NoError(t, err)
 			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Operation)
 			assert.Equal(t, float64(221), a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(float64))
@@ -1160,7 +1160,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 			err := a.Parse()
 			assert.NoError(t, err)
 
-			p := a.Print(&PrintConf{Margin: 4})
+			p := a.Print(PrintConf{Margin: 4})
 			fmt.Println(p)
 		})
 		t.Run("through_dot pass", func(t *testing.T) {
@@ -1416,7 +1416,7 @@ func TestParseAST(t *testing.T) {
 	assert.NoError(t, err)
 	// pp.Println(a.ModuleStatement)
 
-	p := a.Print(&PrintConf{Margin: 4})
+	p := a.Print(PrintConf{Margin: 4})
 	// fmt.Println(p)
 	assert.Equal(t, true, compareHashes(code, p))
 }
