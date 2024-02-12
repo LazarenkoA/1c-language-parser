@@ -15,5 +15,5 @@ func main() {
 		return
 	}
 
-	fmt.Println(a.Print(&ast.PrintConf{Margin: 4}))
+	fmt.Println(a.Print(ast.PrintConf{Margin: 4}))
 }
