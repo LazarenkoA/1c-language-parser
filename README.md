@@ -28,6 +28,10 @@ func main() {
 }
 
 ```
+### Примеры использования
+* [examples/pretty_code](examples/pretty_code)
+* [Obfuscator-1C](https://github.com/LazarenkoA/Obfuscator-1C)
+
 
 ### Примеры AST
 Вот несколько примеров, демонстрирующих возможности парсера языка 1С:
