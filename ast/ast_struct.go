@@ -33,6 +33,10 @@ type INot interface {
 	Not() interface{}
 }
 
+type IParams interface {
+	Params() []Statement
+}
+
 type Statement interface{}
 
 // type Statements []Statement
@@ -205,6 +209,14 @@ func (e CallChainStatement) Not() interface{} {
 func (e MethodStatement) Not() interface{} {
 	e.not = true
 	return e
+}
+
+func (n NewObjectStatement) Params() []Statement {
+	return n.Param
+}
+
+func (n MethodStatement) Params() []Statement {
+	return n.Param
 }
 
 func (o OperationType) String() string {
