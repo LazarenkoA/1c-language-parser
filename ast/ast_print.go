@@ -84,7 +84,7 @@ func (p *astPrint) printFunctionOrProcedure(pf *FunctionOrProcedure) (result str
 
 	export := ""
 	if pf.Export {
-		export = "Экспорт"
+		export = "Экспорт "
 	}
 
 	directive := ""
