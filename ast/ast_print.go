@@ -61,10 +61,10 @@ func (p *astPrint) printFunctionOrProcedure(pf *FunctionOrProcedure) (result str
 	declaration := ""
 	if pf.Type == PFTypeFunction {
 		declaration = "Функция"
-		defer func() { builder.WriteString(p.newLine(2)); builder.WriteString("КонецФункции") }()
+		defer func() { builder.WriteString(p.newLine(2)); builder.WriteString("КонецФункции ") }()
 	} else if pf.Type == PFTypeProcedure {
 		declaration = "Процедура"
-		defer func() { builder.WriteString(p.newLine(2)); builder.WriteString("КонецПроцедуры") }()
+		defer func() { builder.WriteString(p.newLine(2)); builder.WriteString("КонецПроцедуры ") }()
 	}
 
 	var params []string
@@ -224,7 +224,7 @@ func (p *astPrint) printIfStatement(expr *IfStatement, depth int) (result string
 	spaces := strings.Repeat(" ", p.conf.Margin*depth)
 	defer func() {
 		builder.WriteString(spaces)
-		builder.WriteString("КонецЕсли")
+		builder.WriteString("КонецЕсли ")
 	}()
 
 	builder.WriteString("Если ")
@@ -263,7 +263,7 @@ func (p *astPrint) printLoopStatement(loop *LoopStatement, depth int) (result st
 	}
 	defer func() {
 		builder.WriteString(spaces)
-		builder.WriteString("КонецЦикла")
+		builder.WriteString("КонецЦикла ")
 	}()
 
 	if loop.In != nil {
@@ -348,7 +348,7 @@ func (p *astPrint) printTryStatement(try TryStatement, depth int) (result string
 	builder.WriteString("Попытка")
 	defer func() {
 		builder.WriteString(spaces)
-		builder.WriteString("КонецПопытки")
+		builder.WriteString("КонецПопытки ")
 	}()
 
 	if try.Body != nil {
