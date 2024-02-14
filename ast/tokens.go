@@ -21,7 +21,6 @@ type Token struct {
 	offset   int
 	one      sync.Once
 	srs      string
-	charSize int
 	position Position
 	literal  string
 	value    interface{}
@@ -95,7 +94,11 @@ func (t *Token) Next(srs string) (token int, err error) {
 	case String:
 		t.value = t.literal
 	case Date:
-		t.value, err = time.Parse("20060102", t.literal)
+		// без времени
+		if t.value, err = time.Parse("20060102", t.literal); err != nil {
+			// с временем
+			t.value, err = time.Parse("20060102150405", t.literal)
+		}
 	case Undefind:
 		t.value = nil
 	case True:
@@ -297,9 +300,11 @@ func (t *Token) skipComment() {
 		return
 	}
 
-	// проверяем что на новой строке нет комментария, если есть, рекурсия
-	if t.currentLet() == '/' {
+	// проверяем что на новой строке нет комментария или новой области, если есть, рекурсия
+	if cl := t.currentLet(); cl == '/' {
 		t.skipComment()
+	} else if cl := t.currentLet(); cl == '#' {
+		t.skipRegions()
 	}
 }
 
@@ -321,8 +326,9 @@ func (t *Token) skipRegions() {
 }
 
 func (t *Token) nextLet() rune {
-	t.offset += t.charSize
-	defer func() { t.offset -= t.charSize }()
+	_, size := utf8.DecodeRuneInString(t.srs[t.offset:])
+	t.offset += size
+	defer func() { t.offset -= size }()
 
 	return t.currentLet()
 }
@@ -332,13 +338,12 @@ func (t *Token) currentLet() rune {
 		return EOF
 	}
 
-	char, size := utf8.DecodeRuneInString(t.srs[t.offset:])
+	char, _ := utf8.DecodeRuneInString(t.srs[t.offset:])
 	if char == utf8.RuneError {
 		fmt.Println(errors.New("error decoding the character"))
 		return char
 	}
 
-	t.charSize = size
 	return char
 }
 
@@ -353,7 +358,8 @@ func (t *Token) GetPosition() Position {
 }
 
 func (t *Token) nextPos() {
-	t.offset += t.charSize
+	_, size := utf8.DecodeRuneInString(t.srs[t.offset:])
+	t.offset += size
 }
 
 func (t *Token) scanNumber() (string, error) {

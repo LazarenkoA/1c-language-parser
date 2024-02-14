@@ -1141,12 +1141,15 @@ func TestParseFunctionProcedure(t *testing.T) {
 		})
 		t.Run("with region", func(t *testing.T) {
 			code := `#Область ПрограммныйИнтерфейс
+// hg
+#Область ПрограммныйИнтерфейс
 					&НасервереБезКонтекста
 					Процедура ПодключитьВнешнююОбработку()
 						ТипЗначенияСтрокой = XMLТипЗнч(КлючДанных).ИмяТипа;
 
 					КонецПроцедуры
 					#КонецОбласти
+#КонецОбласти
 
 					#Область СлужебныеПроцедурыИФункции
 					&НасервереБезКонтекста
@@ -1160,8 +1163,8 @@ func TestParseFunctionProcedure(t *testing.T) {
 			err := a.Parse()
 			assert.NoError(t, err)
 
-			p := a.Print(PrintConf{Margin: 4})
-			fmt.Println(p)
+			// p := a.Print(PrintConf{Margin: 4})
+			// fmt.Println(p)
 		})
 		t.Run("through_dot pass", func(t *testing.T) {
 			code := `Процедура ЗагрузитьОбъекты(Задание, Отказ = Ложь) Экспорт
@@ -1340,6 +1343,12 @@ func TestParseBaseExpression(t *testing.T) {
 func TestParseAST(t *testing.T) {
 	code := `Процедура ОткрытьНавигационнуюСсылку(НавигационнаяСсылка, Знач Оповещение = Неопределено) Экспорт
 
+	ПустаяДата = '00010101000000';
+	ПустаяДата = '20131231235959';
+
+	КлючЗаписиРегистра = Новый("РегистрСведенийКлючЗаписи.СостоянияОригиналовПервичныхДокументов", ПараметрыМассив);
+	МассаДМ = ВыборкаЕдИзм.МассаДМ/Количество;
+	
      стр = новый Структура("Цикл", 1);
      стр.Цикл = 0; 
 
@@ -1367,7 +1376,6 @@ func TestParseAST(t *testing.T) {
 
 ~метка:
 
-вуцуцу = Дата('00010101');
 
 
 	вы = ввывыв[0];
@@ -1414,7 +1422,6 @@ func TestParseAST(t *testing.T) {
 	a := NewAST(code)
 	err := a.Parse()
 	assert.NoError(t, err)
-	// pp.Println(a.ModuleStatement)
 
 	p := a.Print(PrintConf{Margin: 4})
 	// fmt.Println(p)

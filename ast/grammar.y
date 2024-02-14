@@ -299,8 +299,13 @@ declarations_method_params : { $$ = []ParamStatement{} }
 ;
 
 // для ключевого слова Новый
+// 1С допускает такие конструкции
+// новый Структура(), новый Массив() ...
+// но так же и такие
+// Новый("РегистрСведенийКлючЗаписи.СостоянияОригиналовПервичныхДокументов", ПараметрыМассив);
 new_object:  New Identifier { $$ = NewObjectStatement{ Constructor: $2.literal } }
             | New Identifier '(' exprs ')' { $$ = NewObjectStatement{ Constructor: $2.literal, Param: $4 } }
+            | New '(' exprs ')' { $$ = NewObjectStatement{ Param: $3 } }
 ;
 
 simple_expr:  String { $$ = $1.value  }

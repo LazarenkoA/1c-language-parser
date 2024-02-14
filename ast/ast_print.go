@@ -118,7 +118,7 @@ func (p *astPrint) printVarStatement(v Statement) string {
 	case bool:
 		return IF[string](val, "Истина", "Ложь")
 	case time.Time:
-		return fmt.Sprintf(`'%s'`, val.Format("20060102"))
+		return fmt.Sprintf(`'%s'`, val.Format("20060102150405"))
 	case CallChainStatement:
 		not := IF[string](val.not, "Не ", "")
 		return not + p.printCallChainStatement(val)
