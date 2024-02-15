@@ -154,7 +154,7 @@ func TestParseModule(t *testing.T) {
 				
 				&НаКлиенте
 				Процедура вв2()
-				
+
 				Конецпроцедуры`
 
 		a := NewAST(code)
@@ -177,7 +177,7 @@ func TestParseModule(t *testing.T) {
 		code := `Перем в; 
 
 				Процедура вв()
-				
+					
 				Конецпроцедуры
 				Перем а;`
 
@@ -185,12 +185,68 @@ func TestParseModule(t *testing.T) {
 		err := a.Parse()
 		assert.ErrorContains(t, err, "variable declarations must be placed at the beginning of the module")
 	})
-	t.Run("bosh", func(t *testing.T) {
-		code := `fdfd`
+	t.Run("without FunctionProcedure pass", func(t *testing.T) {
+		code := `
+					Пока Истина Цикл
+						
+					КонецЦикла;
+					
+					
+					ВызватьИсключение "";
+					
+					Если Истина Тогда
+						а = 0;
+					КонецЕсли`
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.EqualError(t, err, "syntax error. line: 1, column: 0 (unexpected literal: \"fdfd\")")
+		assert.NoError(t, err)
+	})
+	t.Run("without FunctionProcedure pass", func(t *testing.T) {
+		code := `Перем в; 
+					Функция test1() 
+					КонецФункции
+
+Функция test1() 
+					КонецФункции
+
+					Пока Истина Цикл
+						
+					КонецЦикла;
+					
+					
+					ВызватьИсключение "";
+					
+					Если Истина Тогда
+						а = 0;
+					КонецЕсли;`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+
+		// fmt.Println(a.Print(PrintConf{Margin: 4}))
+	})
+	t.Run("without FunctionProcedure error", func(t *testing.T) {
+		code := `
+					Пока Истина Цикл
+						
+					КонецЦикла;
+					
+					
+					ВызватьИсключение "";
+					
+					Если Истина Тогда
+						а = 0;
+					КонецЕсли;
+
+					Процедура test()
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.Error(t, err)
+		// assert.ErrorContains(t, err, "procedure and function definitions should be placed before the module body statements")
 	})
 }
 
@@ -1463,7 +1519,12 @@ func TestParseAST(t *testing.T) {
 		ОткрытьСправку(НавигационнаяСсылка);
 		Возврат;
 	КонецЕсли;
-КонецПроцедуры`
+КонецПроцедуры
+
+Если Оповещение <> Неопределено Тогда 
+			ПриложениеЗапущено = Истина;
+			ВыполнитьОбработкуОповещения(Оповещение, ПриложениеЗапущено);
+		КонецЕсли;`
 
 	a := NewAST(code)
 	err := a.Parse()

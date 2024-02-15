@@ -56,6 +56,9 @@ func (p *astPrint) print() (result string) {
 		if pf, ok := node.(*FunctionOrProcedure); ok {
 			builder.WriteString(p.printFunctionOrProcedure(pf))
 			builder.WriteString(p.newLine(3))
+		} else {
+			builder.WriteString(p.newLine(1))
+			builder.WriteString(p.printBodyItem(node, 0))
 		}
 	}
 
@@ -80,6 +83,7 @@ func (p *astPrint) printGlobalVariables(variables GlobalVariables) (result strin
 	builder.WriteString("Перем ")
 	builder.WriteString(variables.Var.Name)
 	builder.WriteString(export)
+	builder.WriteString(";")
 
 	return
 }

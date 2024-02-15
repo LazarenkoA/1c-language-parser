@@ -96,9 +96,20 @@ package ast
 
 %%
 
-mains: main 
-    | mains main;
+module: body {
+         if ast, ok := yylex.(*AstNode); ok {
+            ast.ModuleStatement.Append($1, yylex)
+        }
+    }
+    | main_items opt_body {
+         if ast, ok := yylex.(*AstNode); ok {
+            ast.ModuleStatement.Append($2, yylex)
+        }
+    };
 
+main_items: main
+    | main_items main
+;
 
 main: global_variables {  
         if ast, ok := yylex.(*AstNode); ok {
@@ -109,7 +120,8 @@ main: global_variables {
         if ast, ok := yylex.(*AstNode); ok {
             ast.ModuleStatement.Append($1, yylex)
         }
-};
+    }
+;
 
 opt_directive:  { $$ = nil}
         | Directive { $$ = &$1}
@@ -147,6 +159,7 @@ opt_body: { $$ = nil }
 	| body { $$ = $1 }
 ;
     
+
 body: stmt { $$ = []Statement{$1} }
     | body separator opt_stmt { 
         if $2.literal == ":" && len($1) > 0 {
@@ -224,26 +237,26 @@ ternary: '?' '(' expr comma expr comma expr ')' {
 
 /* циклы */
 stmt_loop: For Each Identifier In through_dot Loop { setLoopFlag(true, yylex) } opt_body EndLoop { 
-    $$ = &LoopStatement{
-        For: $3.literal,
-        In: $5,
-        Body: $8,
+        $$ = &LoopStatement{
+            For: $3.literal,
+            In: $5,
+            Body: $8,
+        }
+        setLoopFlag(false, yylex) 
+    } 
+    | For expr To expr Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
+        $$ = &LoopStatement{
+            For: $2,
+            To: $4,
+            Body: $7,
+        }
+        setLoopFlag(false, yylex)
     }
-    setLoopFlag(false, yylex) 
-} 
-| For expr To expr Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
-     $$ = &LoopStatement{
-        For: $2,
-        To: $4,
-        Body: $7,
-    }
-    setLoopFlag(false, yylex)
-}
-|While expr Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
-    $$ = &LoopStatement{
-        WhileExpr: $2,
-        Body: $5,
-    }
+    |While expr Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
+        $$ = &LoopStatement{
+            WhileExpr: $2,
+            Body: $5,
+        }
 };
 
 stmt : expr { $$ = $1 }

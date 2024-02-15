@@ -49,7 +49,7 @@ type GlobalVariables struct {
 
 type ModuleStatement struct {
 	Name            string
-	GlobalVariables map[string]GlobalVariables
+	GlobalVariables map[string]GlobalVariables `json:"GlobalVariables,omitempty"`
 	Body            []Statement
 }
 
@@ -283,6 +283,18 @@ func (m *ModuleStatement) Append(item Statement, yylex yyLexer) {
 		for _, item := range v {
 			m.Append(item, yylex)
 		}
+	case []Statement:
+		m.Body = append(m.Body, v...)
+	case *FunctionOrProcedure:
+		// если предыдущее выражение не процедура функция, то это значит что какой-то умник вначале или в середине модуля вставил какие-то выражения, а это нельзя. 1С разрешает выражения только в конце модуля
+		if len(m.Body) > 0 {
+			if _, ok := m.Body[len(m.Body)-1].(*FunctionOrProcedure); !ok {
+				yylex.Error("procedure and function definitions should be placed before the module body statements")
+				return
+			}
+		}
+
+		m.Body = append(m.Body, item)
 	default:
 		m.Body = append(m.Body, item)
 	}
