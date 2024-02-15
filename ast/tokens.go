@@ -153,7 +153,7 @@ func (t *Token) next() (int, string, error) {
 		}
 
 		// В литерале даты игнорируются все значения, отличные от цифр.
-		if literal = getOnlyDigit(literal); literal == "" {
+		if literal = extractDigits(literal); literal == "" {
 			return EOF, emptyLit, errors.New("incorrect Date type constant")
 		}
 
@@ -409,7 +409,7 @@ func IsDigit(str string) bool {
 	return true
 }
 
-func getOnlyDigit(str string) string {
+func extractDigits(str string) string {
 	result := make([]rune, 0, len(str))
 	for _, c := range str {
 		if c >= '0' && c <= '9' {
