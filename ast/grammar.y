@@ -12,7 +12,6 @@ package ast
 %type<opt_else> opt_else
 %type<opt_stmt> opt_stmt
 %type<opt_param> opt_param
-%type<manyfuncProc> manyfuncProc 
 %type<exprs> exprs 
 %type<expr> expr
 %type<opt_export> opt_export
@@ -21,7 +20,6 @@ package ast
 %type<declarations_method_params> declarations_method_params
 %type<declarations_method_param> declarations_method_param
 %type<opt_expr> opt_expr
-//%type<opt_exprs> opt_exprs
 %type<through_dot> through_dot
 %type<new_object> new_object
 %type<ternary> ternary
@@ -36,6 +34,8 @@ package ast
 %type<token> colon
 %type<token> ':'
 %type<token> ';'
+%type<global_variables> global_variables
+
 
 
 %union {
@@ -52,12 +52,10 @@ package ast
     opt_body []Statement
     opt_param Statement
     through_dot Statement
-    manyfuncProc []Statement
     declarations_method_params []ParamStatement
     declarations_method_param ParamStatement
     expr Statement
-    opt_expr Statement
-    //opt_exprs []Statement
+    opt_expr Statement  
     exprs []Statement
     opt_export *Token
     opt_directive *Token
@@ -65,12 +63,12 @@ package ast
     new_object Statement
     ternary Statement
     explicit_variables map[string]VarStatement
+    global_variables []GlobalVariables
     opt_explicit_variables map[string]VarStatement
     identifiers []Token
     identifier Statement
     goToLabel *GoToLabelStatement
     opt_goToLabel *GoToLabelStatement
-
 }
 
 %token<token> Directive Identifier Procedure Var EndProcedure If Then ElseIf Else EndIf For Each In To Loop EndLoop Break Not ValueParam While GoToLabel
@@ -98,13 +96,19 @@ package ast
 
 %%
 
-main: manyfuncProc {
-    if ast, ok := yylex.(*AstNode); ok {
-        ast.ModuleStatement = ModuleStatement{
-            Name: "",
-            Body: $1,
+mains: main 
+    | mains main;
+
+
+main: global_variables {  
+        if ast, ok := yylex.(*AstNode); ok {
+            ast.ModuleStatement.Append($1, yylex)
         }
     }
+    | funcProc {
+        if ast, ok := yylex.(*AstNode); ok {
+            ast.ModuleStatement.Append($1, yylex)
+        }
 };
 
 opt_directive:  { $$ = nil}
@@ -115,8 +119,18 @@ opt_export: { $$ = nil}
         | Export { $$ = &$1}
 ;
 
-manyfuncProc: funcProc { $$ = []Statement{$1} }
-            | manyfuncProc funcProc { $$ = append($1, $2) };
+global_variables: opt_directive Var identifiers opt_export semicolon { 
+        $$ = make([]GlobalVariables,  len($3), len($3))
+        for i, v := range $3 {
+            if $1 != nil {
+                $$[i].Directive = $1.literal
+            }
+
+            $$[i].Export = $4 != nil 
+            $$[i].Var = VarStatement { Name: v.literal }
+        }
+};
+
 
 funcProc: opt_directive Function Identifier '(' declarations_method_params ')' opt_export { isFunction(true, yylex) } opt_explicit_variables opt_body EndFunction
         {  
@@ -174,6 +188,7 @@ explicit_variables: Var identifiers semicolon {
                     }
                 }
 ;
+
 
 /* Если Конецесли */
 stmt_if : If expr Then opt_body opt_elseif_list opt_else EndIf {  

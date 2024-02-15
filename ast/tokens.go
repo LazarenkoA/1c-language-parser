@@ -94,10 +94,11 @@ func (t *Token) Next(srs string) (token int, err error) {
 	case String:
 		t.value = t.literal
 	case Date:
-		// без времени
-		if t.value, err = time.Parse("20060102", t.literal); err != nil {
-			// с временем
-			t.value, err = time.Parse("20060102150405", t.literal)
+		formats := []string{"20060102", "2006010215", "200601021504", "20060102150405"}
+		for _, f := range formats {
+			if t.value, err = time.Parse(f, t.literal); err == nil {
+				break
+			}
 		}
 	case Undefind:
 		t.value = nil

@@ -1,5 +1,7 @@
 package ast
 
+import "fmt"
+
 type StatementType int
 type OperationType int
 
@@ -39,11 +41,16 @@ type IParams interface {
 
 type Statement interface{}
 
-// type Statements []Statement
+type GlobalVariables struct {
+	Directive string
+	Export    bool
+	Var       VarStatement
+}
 
 type ModuleStatement struct {
-	Name string
-	Body []Statement
+	Name            string
+	GlobalVariables map[string]GlobalVariables
+	Body            []Statement
 }
 
 type VarStatement struct {
@@ -59,7 +66,6 @@ type FunctionOrProcedure struct {
 	Params            []ParamStatement
 	Directive         string
 	ExplicitVariables map[string]VarStatement
-	// ImplicitVariables []VarStatement
 }
 
 type ParamStatement struct {
@@ -254,6 +260,32 @@ func (o OperationType) String() string {
 
 func (m ModuleStatement) Walk(callBack func(current *FunctionOrProcedure, statement *Statement)) {
 	walkHelper(nil, m.Body, callBack)
+}
+
+func (m *ModuleStatement) Append(item Statement, yylex yyLexer) {
+	switch v := item.(type) {
+	case GlobalVariables:
+		if len(m.Body) > 0 {
+			yylex.Error("variable declarations must be placed at the beginning of the module")
+			return
+		}
+
+		if m.GlobalVariables == nil {
+			m.GlobalVariables = map[string]GlobalVariables{}
+		}
+
+		if _, ok := m.GlobalVariables[v.Var.Name]; ok {
+			yylex.Error(fmt.Sprintf("%v: with the specified name %q", errVariableAlreadyDefined, v.Var.Name))
+		} else {
+			m.GlobalVariables[v.Var.Name] = v
+		}
+	case []GlobalVariables:
+		for _, item := range v {
+			m.Append(item, yylex)
+		}
+	default:
+		m.Body = append(m.Body, item)
+	}
 }
 
 // func (m Statements) Walk(callBack func(statement *Statement)) {

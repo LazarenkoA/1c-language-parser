@@ -133,13 +133,57 @@ import (
 // tr := test111[IfStatement]{}
 // _ = tr.base.TrueBlock
 
-func TestParseBase(t *testing.T) {
+func TestParseModule(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		code := ``
 
 		a := NewAST(code)
 		err := a.Parse()
 		assert.NoError(t, err)
+	})
+	t.Run("global var", func(t *testing.T) {
+		code := `&НаСервере
+				Перем в, e;
+
+				&НаКлиенте 
+				Перем а Экспорт; Перем с;
+
+				Процедура вв1()
+				
+				Конецпроцедуры
+				
+				&НаКлиенте
+				Процедура вв2()
+				
+				Конецпроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("global var error", func(t *testing.T) {
+		code := `Перем а;
+				Перем а;
+				
+				Процедура вв()
+				
+				Конецпроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.ErrorContains(t, err, "variable has already been defined")
+	})
+	t.Run("global var error", func(t *testing.T) {
+		code := `Перем в; 
+
+				Процедура вв()
+				
+				Конецпроцедуры
+				Перем а;`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.ErrorContains(t, err, "variable declarations must be placed at the beginning of the module")
 	})
 	t.Run("bosh", func(t *testing.T) {
 		code := `fdfd`
@@ -1341,7 +1385,13 @@ func TestParseBaseExpression(t *testing.T) {
 }
 
 func TestParseAST(t *testing.T) {
-	code := `Процедура ОткрытьНавигационнуюСсылку(НавигационнаяСсылка, Знач Оповещение = Неопределено) Экспорт
+	code := `
+
+Процедура ОткрытьНавигационнуюСсылку(НавигационнаяСсылка, Знач Оповещение = Неопределено) Экспорт
+
+//Элементы.КартинкаНацПроект.Видимость = Объект.ДатаНачалаДействия > '2018.12.31' 
+//										 И БюджетнаяКлассификацияКлиентСервер.ЭтоКодНацПроекта(Сред(Объект.Наименование, 4, 1)) > 0;
+				
 
 	ПустаяДата = '00010101000000';
 	ПустаяДата = '20131231235959';
@@ -1424,7 +1474,7 @@ func TestParseAST(t *testing.T) {
 	assert.NoError(t, err)
 
 	p := a.Print(PrintConf{Margin: 4})
-	// fmt.Println(p)
+	fmt.Println(p)
 	assert.Equal(t, true, compareHashes(code, p))
 }
 

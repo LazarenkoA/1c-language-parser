@@ -39,19 +39,49 @@ func (ast *AstNode) PrintStatement(stat Statement, conf PrintConf) string {
 	return p.printBodyItem(stat, 0)
 }
 
-func (p *astPrint) print() string {
+func (p *astPrint) print() (result string) {
 	if len(p.ast.ModuleStatement.Body) == 0 {
 		return ""
 	}
 
-	result := ""
+	builder := strings.Builder{}
+	defer func() { result = builder.String() }()
+
+	for _, v := range p.ast.ModuleStatement.GlobalVariables {
+		builder.WriteString(p.printGlobalVariables(v))
+		builder.WriteString(p.newLine(1))
+	}
+
 	for _, node := range p.ast.ModuleStatement.Body {
 		if pf, ok := node.(*FunctionOrProcedure); ok {
-			result += p.printFunctionOrProcedure(pf) + p.newLine(3)
+			builder.WriteString(p.printFunctionOrProcedure(pf))
+			builder.WriteString(p.newLine(3))
 		}
 	}
 
-	return result
+	return
+}
+
+func (p *astPrint) printGlobalVariables(variables GlobalVariables) (result string) {
+	builder := strings.Builder{}
+	defer func() { result = builder.String() }()
+
+	export := ""
+	if variables.Export {
+		export = " Экспорт "
+	}
+
+	directive := ""
+	if variables.Directive != "" {
+		directive = "\n" + variables.Directive + "\n"
+	}
+
+	builder.WriteString(directive)
+	builder.WriteString("Перем ")
+	builder.WriteString(variables.Var.Name)
+	builder.WriteString(export)
+
+	return
 }
 
 func (p *astPrint) printFunctionOrProcedure(pf *FunctionOrProcedure) (result string) {
