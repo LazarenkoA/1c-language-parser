@@ -94,7 +94,7 @@ func (t *Token) Next(srs string) (token int, err error) {
 	case String:
 		t.value = t.literal
 	case Date:
-		formats := []string{"20060102", "2006010215", "200601021504", "20060102150405"}
+		formats := []string{"20060102", "200601021504", "20060102150405"} // Допускается опускать либо время целиком, либо только секунды.
 		for _, f := range formats {
 			if t.value, err = time.Parse(f, t.literal); err == nil {
 				break
@@ -152,7 +152,8 @@ func (t *Token) next() (int, string, error) {
 			return EOF, emptyLit, err
 		}
 
-		if !IsDigit(literal) {
+		// В литерале даты игнорируются все значения, отличные от цифр.
+		if literal = getOnlyDigit(literal); literal == "" {
 			return EOF, emptyLit, errors.New("incorrect Date type constant")
 		}
 
@@ -406,6 +407,16 @@ func IsDigit(str string) bool {
 		}
 	}
 	return true
+}
+
+func getOnlyDigit(str string) string {
+	result := make([]rune, 0, len(str))
+	for _, c := range str {
+		if c >= '0' && c <= '9' {
+			result = append(result, c)
+		}
+	}
+	return string(result)
 }
 
 func fastToLower(s string) string {
