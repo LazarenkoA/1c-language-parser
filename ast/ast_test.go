@@ -268,9 +268,9 @@ func TestParseIF(t *testing.T) {
 						test = 2+2*2;
 						а = 7;
 						а = 7.2;
-					ИначеЕсли Не 4 = 3 И Не 8 = 2 И 1 <> 3 Тогда
+					ИначеЕсли Не 4 = 3 И Не 8 = 2 И 1 <> 3 Тогда;
 						а = 5;
-					ИначеЕсли Ложь Тогда
+					ИначеЕсли Ложь Тогда;
 					Иначе
 						а = -(1+1);
 						а = -s;
@@ -1533,6 +1533,7 @@ func TestParseAST(t *testing.T) {
 	p := a.Print(PrintConf{Margin: 4})
 	// fmt.Println(p)
 	assert.Equal(t, true, compareHashes(code, p))
+
 }
 
 func TestBigProcedure(t *testing.T) {

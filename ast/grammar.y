@@ -161,7 +161,7 @@ opt_body: { $$ = nil }
     
 
 body: stmt { $$ = []Statement{$1} }
-    | body separator opt_stmt { 
+    | opt_body separator opt_stmt { 
         if $2.literal == ":" && len($1) > 0 {
             if _, ok := $1[len($1)-1].(*GoToLabelStatement); !ok {
                 yylex.Error("semicolon (;) is expected")
