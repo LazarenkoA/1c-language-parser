@@ -305,7 +305,7 @@ func (m *ModuleStatement) Append(item Statement, yylex yyLexer) {
 // }
 
 func walkHelper(parent *FunctionOrProcedure, statements []Statement, callBack func(current *FunctionOrProcedure, statement *Statement)) {
-	for _, item := range statements {
+	for i, item := range statements {
 		switch v := item.(type) {
 		case *IfStatement:
 			walkHelper(parent, v.TrueBlock, callBack)
@@ -321,7 +321,7 @@ func walkHelper(parent *FunctionOrProcedure, statements []Statement, callBack fu
 			parent = v
 		}
 
-		callBack(parent, &item)
+		callBack(parent, &statements[i])
 	}
 
 }
