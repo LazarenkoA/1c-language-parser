@@ -259,7 +259,11 @@ func (o OperationType) String() string {
 }
 
 func (m ModuleStatement) Walk(callBack func(current *FunctionOrProcedure, statement *Statement)) {
-	walkHelper(nil, m.Body, callBack)
+	StatementWalk(m.Body, callBack)
+}
+
+func StatementWalk(stm []Statement, callBack func(current *FunctionOrProcedure, statement *Statement)) {
+	walkHelper(nil, stm, callBack)
 }
 
 func (m *ModuleStatement) Append(item Statement, yylex yyLexer) {
