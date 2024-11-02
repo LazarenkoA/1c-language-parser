@@ -5,22 +5,20 @@ package ast
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"reflect"
 	"sync/atomic"
-
-	"github.com/pkg/errors"
 )
 
 type AstNode struct {
 	ModuleStatement
 
-	code       string
-	err        error
-	pos        Position
-	currentLit string
-	isLoop     atomic.Int32
-	isTry      atomic.Int32
-	isFunction bool
+	code         string
+	err          error
+	currentToken Token
+	isLoop       atomic.Int32
+	isTry        atomic.Int32
+	isFunction   bool
 }
 
 const EOF = -1 // end of file
@@ -63,15 +61,15 @@ func (ast *AstNode) Lex(lval *yySymType) int {
 		return EOF
 	}
 
-	ast.currentLit = lval.token.literal
-	ast.pos = lval.token.GetPosition()
-	ast.pos.Column -= len([]rune(lval.token.literal)) + 1
-
+	ast.currentToken = lval.token
 	return token
 }
 
 func (ast *AstNode) Error(s string) {
-	ast.err = fmt.Errorf("%s. line: %d, column: %d (unexpected literal: %q)", s, ast.pos.Line, ast.pos.Column, ast.currentLit)
+	pos := ast.currentToken.GetPosition()
+	pos.Column -= len([]rune(ast.currentToken.literal)) + 1
+
+	ast.err = fmt.Errorf("%s. line: %d, column: %d (unexpected literal: %q)", s, pos.Line, pos.Column, ast.currentToken.literal)
 }
 
 func checkLoopOperator(token Token, yylex yyLexer) {
