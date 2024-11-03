@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
 )
+
+//go:generate mockgen -source=$GOFILE -destination=./mock/mock.go
+type Iast interface {
+	SrsCode() string
+}
 
 type Position struct {
 	Line   int
@@ -19,8 +23,7 @@ type Position struct {
 
 type Token struct {
 	offset   int
-	one      sync.Once
-	srs      string
+	ast      Iast
 	position Position
 	literal  string
 	value    interface{}
@@ -68,6 +71,8 @@ var (
 		"неопределено":      Undefind,
 		"не":                Not,
 		"экспорт":           Export,
+		"выполнить":         Execute,
+		//"вычислить":         Eval,
 		// "массив":            Array,
 		// "структура":         Struct,
 		// "соответствие":      Dictionary,
@@ -82,12 +87,10 @@ var (
 	}
 )
 
-func (t *Token) Next(srs string) (token int, err error) {
-	t.one.Do(func() {
-		t.srs = srs
-	})
-
+func (t *Token) Next(ast Iast) (token int, err error) {
+	t.ast = ast
 	token, t.literal, err = t.next()
+
 	switch token {
 	case Number:
 		t.value, err = strconv.ParseFloat(t.literal, 64)
@@ -122,12 +125,9 @@ func (t *Token) next() (int, string, error) {
 
 	switch let := t.currentLet(); {
 	case isLetter(let):
-		literal, err := t.scanIdentifier()
-		if err != nil {
-			return EOF, emptyLit, err
-		}
-
+		literal := t.scanIdentifier()
 		lowLit := fastToLower(literal)
+
 		if tName, ok := tokens[lowLit]; ok && !t.prevDot {
 			return tName, literal, nil
 		} else {
@@ -201,12 +201,9 @@ func (t *Token) next() (int, string, error) {
 		t.nextPos()
 		pos := t.offset
 
-		literal, err := t.scanIdentifier()
-		if err != nil {
-			return EOF, emptyLit, err
-		}
-
+		literal := t.scanIdentifier()
 		lowLit := fastToLower("&" + literal)
+
 		if tName, ok := directives[lowLit]; ok {
 			return tName, "&" + literal, nil
 		} else {
@@ -215,11 +212,7 @@ func (t *Token) next() (int, string, error) {
 		}
 	case let == '~':
 		t.nextPos()
-		literal, err := t.scanIdentifier()
-		if err != nil {
-			return EOF, emptyLit, err
-		}
-		return GoToLabel, literal, err
+		return GoToLabel, t.scanIdentifier(), nil
 	default:
 		switch let {
 		case EOF:
@@ -235,7 +228,7 @@ func (t *Token) next() (int, string, error) {
 	}
 }
 
-func (t *Token) scanIdentifier() (string, error) {
+func (t *Token) scanIdentifier() string {
 	var ret []rune
 
 	for {
@@ -248,7 +241,7 @@ func (t *Token) scanIdentifier() (string, error) {
 		t.nextPos()
 	}
 
-	return string(ret), nil
+	return string(ret)
 }
 
 func (t *Token) scanString(end rune) (string, error) {
@@ -328,7 +321,7 @@ func (t *Token) skipRegions() {
 }
 
 func (t *Token) nextLet() rune {
-	_, size := utf8.DecodeRuneInString(t.srs[t.offset:])
+	_, size := utf8.DecodeRuneInString(t.ast.SrsCode()[t.offset:])
 	t.offset += size
 	defer func() { t.offset -= size }()
 
@@ -336,11 +329,11 @@ func (t *Token) nextLet() rune {
 }
 
 func (t *Token) currentLet() rune {
-	if t.offset >= len(t.srs) {
+	if t.offset >= len(t.ast.SrsCode()) {
 		return EOF
 	}
 
-	char, _ := utf8.DecodeRuneInString(t.srs[t.offset:])
+	char, _ := utf8.DecodeRuneInString(t.ast.SrsCode()[t.offset:])
 	if char == utf8.RuneError {
 		fmt.Println(errors.New("error decoding the character"))
 		return char
@@ -350,17 +343,17 @@ func (t *Token) currentLet() rune {
 }
 
 func (t *Token) GetPosition() Position {
-	eol := strings.LastIndex(t.srs[:t.offset], "\n") + 1
+	eol := strings.LastIndex(t.ast.SrsCode()[:t.offset], "\n") + 1
 	lineBegin := IF[int](eol < 0, 0, eol)
 
 	return Position{
-		Line:   strings.Count(t.srs[:t.offset], "\n") + 1,
-		Column: len([]rune(t.srs[lineBegin:t.offset])) + 1,
+		Line:   strings.Count(t.ast.SrsCode()[:t.offset], "\n") + 1,
+		Column: len([]rune(t.ast.SrsCode()[lineBegin:t.offset])) + 1,
 	}
 }
 
 func (t *Token) nextPos() {
-	_, size := utf8.DecodeRuneInString(t.srs[t.offset:])
+	_, size := utf8.DecodeRuneInString(t.ast.SrsCode()[t.offset:])
 	t.offset += size
 }
 
@@ -419,7 +412,7 @@ func extractDigits(str string) string {
 	return string(result)
 }
 
-func fastToLower(s string) string {
+func fastToLower_old(s string) string {
 	rs := bytes.NewBuffer(make([]byte, 0, len(s)))
 	for _, rn := range s {
 		switch {
@@ -432,4 +425,32 @@ func fastToLower(s string) string {
 		}
 	}
 	return rs.String()
+}
+
+func fastToLower(s string) string {
+	// Преобразуем строку в срез байт
+	b := []byte(s)
+	i := 0
+
+	for i < len(b) {
+		// Читаем руну
+		r, size := utf8.DecodeRune(b[i:])
+
+		// Проверяем, является ли руна латинской или кириллической буквой
+		if r >= 'A' && r <= 'Z' {
+			// Латинские буквы
+			b[i] += 'a' - 'A'
+		} else if r >= 'А' && r <= 'Я' {
+			// Кириллические заглавные буквы
+			utf8.EncodeRune(b[i:], r+('а'-'А'))
+		} else if r == 'Ё' {
+			// Обрабатываем отдельно 'Ё'
+			utf8.EncodeRune(b[i:], 'ё')
+		}
+		// Переходим к следующему символу
+		i += size
+	}
+
+	// Возвращаем строку, преобразованную обратно из среза байт
+	return string(b)
 }

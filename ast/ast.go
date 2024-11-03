@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"reflect"
+	"strings"
 	"sync/atomic"
 )
 
@@ -33,7 +34,7 @@ func NewAST(code string) *AstNode {
 }
 
 func (ast *AstNode) Parse() error {
-	if len(ast.code) == 0 {
+	if len(strings.TrimSpace(ast.code)) == 0 {
 		return nil
 	}
 
@@ -53,7 +54,7 @@ func (ast *AstNode) Lex(lval *yySymType) int {
 		return EOF
 	}
 
-	token, err := lval.token.Next(ast.code)
+	token, err := lval.token.Next(ast)
 	if err != nil {
 		ast.err = errors.Wrap(err, "get token error")
 	}
@@ -63,6 +64,10 @@ func (ast *AstNode) Lex(lval *yySymType) int {
 
 	ast.currentToken = lval.token
 	return token
+}
+
+func (ast *AstNode) SrsCode() string {
+	return ast.code
 }
 
 func (ast *AstNode) Error(s string) {

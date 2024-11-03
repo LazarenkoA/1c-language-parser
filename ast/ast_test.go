@@ -250,6 +250,92 @@ func TestParseModule(t *testing.T) {
 	})
 }
 
+func TestExecute(t *testing.T) {
+	t.Run("Execute-1", func(t *testing.T) {
+		code := `&НаСервере
+					Процедура ВыполнитьВБезопасномРежиме(Знач Алгоритм, Знач Параметры = Неопределено)
+						Выполнить Алгоритм;
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("Execute-2", func(t *testing.T) {
+		code := `&НаСервере
+					Процедура ВыполнитьВБезопасномРежиме(Знач Алгоритм, Знач Параметры = Неопределено)
+						Выполнить(Алгоритм);
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+
+		p := a.Print(PrintConf{Margin: 4})
+		assert.Equal(t, true, compareHashes(code, p))
+	})
+	t.Run("Execute-3", func(t *testing.T) {
+		code := `&НаСервере
+					Процедура ВыполнитьВБезопасномРежиме(Знач Алгоритм, Знач Параметры = Неопределено)
+						Выполнить "Алгоритм";
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("Execute-error", func(t *testing.T) {
+		code := `&НаСервере
+					Процедура ВыполнитьВБезопасномРежиме(Знач Алгоритм, Знач Параметры = Неопределено)
+						Выполнить 32;
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "syntax error. line: 3, column: 16 (unexpected literal: \"32\")")
+	})
+	t.Run("Execute-error", func(t *testing.T) {
+		code := `&НаСервере
+					Процедура ВыполнитьВБезопасномРежиме(Знач Алгоритм, Знач Параметры = Неопределено)
+						Выполнить "Алгоритм", "";
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "syntax error. line: 3, column: 26 (unexpected literal: \",\")")
+	})
+	t.Run("Execute-error-2", func(t *testing.T) {
+		code := `&НаСервере
+					Процедура ВыполнитьВБезопасномРежиме(Знач Алгоритм, Знач Параметры = Неопределено)
+						Выполнить ("Алгоритм", "");
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "syntax error. line: 3, column: 27 (unexpected literal: \",\")")
+	})
+	t.Run("Eval-1", func(t *testing.T) {
+		code := `&НаСервере
+					Процедура ВыполнитьВБезопасномРежиме(Знач Алгоритм, Знач Параметры = Неопределено)
+						в = Вычислить(Алгоритм);
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+	})
+	t.Run("Eval-2", func(t *testing.T) {
+		code := `&НаСервере
+					Процедура ВыполнитьВБезопасномРежиме(Знач Алгоритм, Знач Параметры = Неопределено)
+						Вычислить Алгоритм;
+					КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.EqualError(t, err, "syntax error. line: 3, column: 16 (unexpected literal: \"Алгоритм\")")
+	})
+}
+
 func TestParseIF(t *testing.T) {
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -835,7 +921,7 @@ func TestTryCatch(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку()
 						Попытка 
 							а = 1+1;
-							ВызватьИсключение "dsdsd dsds";	  
+							ВызватьИсключение("dsdsd dsds");	  
 							f = 0;
 							f = 0		
 						Исключение
@@ -1536,6 +1622,16 @@ func TestParseAST(t *testing.T) {
 
 }
 
+func TestParseEmpty(t *testing.T) {
+	code := `
+
+`
+
+	a := NewAST(code)
+	err := a.Parse()
+	assert.NoError(t, err)
+}
+
 func TestBigProcedure(t *testing.T) {
 	if _, err := os.Stat("testdata"); errors.Is(err, os.ErrNotExist) {
 		t.Fatal("testdata file not found")
@@ -1674,6 +1770,26 @@ func BenchmarkString(b *testing.B) {
 	//		stringCount(str, "df")
 	//	}
 	//})
+}
+
+func Benchmark_fastToLower(b *testing.B) {
+	str := "rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfd rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfdrdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfd rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfdrdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfd rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfd"
+
+	b.Run("sdk", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			strings.ToLower(str)
+		}
+	})
+	b.Run("fastToLower", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fastToLower_old(str)
+		}
+	})
+	b.Run("fastToLower", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fastToLower(str)
+		}
+	})
 }
 
 func test(str string) {

@@ -3,6 +3,8 @@ package ast
 import (
 	"crypto/rand"
 	"fmt"
+	mock_ast "github.com/LazarenkoA/1c-language-parser/ast/mock"
+	"github.com/golang/mock/gomock"
 	"regexp"
 	"strings"
 	"testing"
@@ -11,29 +13,37 @@ import (
 )
 
 func Test_Next(t *testing.T) {
+	c := gomock.NewController(t)
+	defer c.Finish()
 
 	t.Run("var & Identifier", func(t *testing.T) {
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(` Перем     ввв; ввв = 3;`).AnyTimes()
 		tok := new(Token)
-		token, err := tok.Next(` Перем     ввв; ввв = 3;`)
+		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "Перем", tok.literal)
 		assert.Equal(t, token, Var)
 
-		token, err = tok.Next(` Перем     ввв; ввв = 3;`)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "ввв", tok.literal)
 		assert.Equal(t, token, Identifier)
 	})
 
 	t.Run("error", func(t *testing.T) {
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`   2ввв`).AnyTimes()
 		tok := new(Token)
-		_, err := tok.Next(`   2ввв`)
+		_, err := tok.Next(ast)
 		assert.EqualError(t, err, "identifier immediately follow the number")
 	})
 
 	t.Run("Number", func(t *testing.T) {
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`32323 `).AnyTimes()
 		tok := new(Token)
-		token, err := tok.Next(`32323 `)
+		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "32323", tok.literal)
 		assert.Equal(t, token, Number)
@@ -42,77 +52,81 @@ func Test_Next(t *testing.T) {
 	t.Run("String", func(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			tok := new(Token)
-			code := `тестПерем = "тест тест"`
+			ast := mock_ast.NewMockIast(c)
+			ast.EXPECT().SrsCode().Return(`тестПерем = "тест тест"`).AnyTimes()
 
-			token, err := tok.Next(code)
+			token, err := tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "тестПерем", tok.literal)
 			assert.Equal(t, token, Identifier)
 
-			token, err = tok.Next(code)
+			token, err = tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "=", tok.literal)
 			assert.Equal(t, token, int('='))
 
-			token, err = tok.Next(code)
+			token, err = tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "тест тест", tok.literal)
 			assert.Equal(t, token, String)
 		})
 		t.Run("", func(t *testing.T) {
+			ast := mock_ast.NewMockIast(c)
+			ast.EXPECT().SrsCode().Return(`тестПерем = "тест ""тест"" fd"`).AnyTimes()
 			tok := new(Token)
-			code := `тестПерем = "тест ""тест"" fd"`
 
-			token, err := tok.Next(code)
+			token, err := tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "тестПерем", tok.literal)
 			assert.Equal(t, token, Identifier)
 
-			token, err = tok.Next(code)
+			token, err = tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "=", tok.literal)
 			assert.Equal(t, token, int('='))
 
-			token, err = tok.Next(code)
+			token, err = tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "тест \"\"тест\"\" fd", tok.literal)
 			assert.Equal(t, token, String)
 		})
 		t.Run("date", func(t *testing.T) {
 			t.Run("pass", func(t *testing.T) {
+				ast := mock_ast.NewMockIast(c)
+				ast.EXPECT().SrsCode().Return(`тестПерем = '00010101'`).AnyTimes()
 				tok := new(Token)
-				code := `тестПерем = '00010101'`
 
-				token, err := tok.Next(code)
+				token, err := tok.Next(ast)
 				assert.NoError(t, err)
 				assert.Equal(t, "тестПерем", tok.literal)
 				assert.Equal(t, token, Identifier)
 
-				token, err = tok.Next(code)
+				token, err = tok.Next(ast)
 				assert.NoError(t, err)
 				assert.Equal(t, "=", tok.literal)
 				assert.Equal(t, token, int('='))
 
-				token, err = tok.Next(code)
+				token, err = tok.Next(ast)
 				assert.NoError(t, err)
 				assert.Equal(t, "00010101", tok.literal)
 				assert.Equal(t, token, Date)
 			})
 			t.Run("error", func(t *testing.T) {
+				ast := mock_ast.NewMockIast(c)
+				ast.EXPECT().SrsCode().Return(`тестПерем = 'gfdgfg'`).AnyTimes()
 				tok := new(Token)
-				code := `тестПерем = 'gfdgfg'`
 
-				token, err := tok.Next(code)
+				token, err := tok.Next(ast)
 				assert.NoError(t, err)
 				assert.Equal(t, "тестПерем", tok.literal)
 				assert.Equal(t, token, Identifier)
 
-				token, err = tok.Next(code)
+				token, err = tok.Next(ast)
 				assert.NoError(t, err)
 				assert.Equal(t, "=", tok.literal)
 				assert.Equal(t, token, int('='))
 
-				token, err = tok.Next(code)
+				token, err = tok.Next(ast)
 				assert.EqualError(t, err, "incorrect Date type constant")
 			})
 		})
@@ -120,58 +134,60 @@ func Test_Next(t *testing.T) {
 
 	t.Run("String error", func(t *testing.T) {
 		tok := new(Token)
-		code := `тестПерем = "тест тест`
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`тестПерем = "тест тест`).AnyTimes()
 
-		token, err := tok.Next(code)
+		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "тестПерем", tok.literal)
 		assert.Equal(t, token, Identifier)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "=", tok.literal)
 		assert.Equal(t, token, int('='))
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.EqualError(t, err, "unexpected EOF")
 	})
 
 	t.Run("String error", func(t *testing.T) {
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`тестПерем = "тест тест
+`).AnyTimes()
 		tok := new(Token)
-		code := `тестПерем = "тест тест
-`
-
-		token, err := tok.Next(code)
+		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "тестПерем", tok.literal)
 		assert.Equal(t, token, Identifier)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "=", tok.literal)
 		assert.Equal(t, token, int('='))
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.EqualError(t, err, "unexpected EOL")
 	})
 
 	t.Run("String", func(t *testing.T) {
-		tok := new(Token)
-		code := `тестПерем = "тест 	тест
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`тестПерем = "тест 	тест
 				|ааа fd
-				| wqwq ww"`
+				| wqwq ww"`).AnyTimes()
+		tok := new(Token)
 
-		token, err := tok.Next(code)
+		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "тестПерем", tok.literal)
 		assert.Equal(t, token, Identifier)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "=", tok.literal)
 		assert.Equal(t, token, int('='))
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, `тест 	тест
 				|ааа fd
@@ -180,109 +196,118 @@ func Test_Next(t *testing.T) {
 	})
 
 	t.Run("String error", func(t *testing.T) {
-		tok := new(Token)
-		code := `тестПерем = "тест 	тест
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`тестПерем = "тест 	тест
 				|ааа fd
-				| wqwq ww`
+				| wqwq ww`).AnyTimes()
 
-		token, err := tok.Next(code)
+		tok := new(Token)
+
+		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "тестПерем", tok.literal)
 		assert.Equal(t, token, Identifier)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "=", tok.literal)
 		assert.Equal(t, token, int('='))
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.EqualError(t, err, "unexpected EOF")
 	})
 
 	t.Run("operators", func(t *testing.T) {
-		tok := new(Token)
-		code := `Если РЗ <> Неопределено И ппп или ррр Тогда`
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`Если РЗ <> Неопределено И ппп или ррр Тогда`).AnyTimes()
 
-		token, err := tok.Next(code)
+		tok := new(Token)
+
+		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "Если", tok.literal)
 		assert.Equal(t, token, If)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "РЗ", tok.literal)
 		assert.Equal(t, token, Identifier)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "<>", tok.literal)
 		assert.Equal(t, token, NeEq)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "Неопределено", tok.literal)
 		assert.Equal(t, token, Undefind)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "И", tok.literal)
 		assert.Equal(t, token, And)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "ппп", tok.literal)
 		assert.Equal(t, token, Identifier)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "или", tok.literal)
 		assert.Equal(t, token, Or)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "ррр", tok.literal)
 		assert.Equal(t, token, Identifier)
 
-		token, err = tok.Next(code)
+		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "Тогда", tok.literal)
 		assert.Equal(t, token, Then)
 	})
 
 	t.Run("comment", func(t *testing.T) {
-		tok := new(Token)
-		code := ` Перем     ввв;
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(` Перем     ввв;
 					// ввв = 3;
- 					d = 0;`
+ 					d = 0;`).AnyTimes()
+		tok := new(Token)
 
 		result := []string{"Перем", "ввв", ";", "d", "=", "0", ";"}
 
 		i := 0
-		for token, err := tok.Next(code); err == nil && token > 0; token, err = tok.Next(code) {
+		for token, err := tok.Next(ast); err == nil && token > 0; token, err = tok.Next(ast) {
 			assert.Equal(t, result[i], tok.literal)
 			i++
 		}
 	})
 
 	t.Run("math", func(t *testing.T) {
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`тест = 2+2*2+(2-1);`).AnyTimes()
+
 		tok := new(Token)
-		code := `тест = 2+2*2+(2-1);`
 
 		result := []string{"тест", "=", "2", "+", "2", "*", "2", "+", "(", "2", "-", "1", ")", ";"}
 
 		i := 0
-		for token, err := tok.Next(code); err == nil && token > 0; token, err = tok.Next(code) {
+		for token, err := tok.Next(ast); err == nil && token > 0; token, err = tok.Next(ast) {
 			assert.Equal(t, result[i], tok.literal)
 			i++
 		}
 	})
 
 	t.Run("directive", func(t *testing.T) {
-		tok := new(Token)
-		code := `&НаСервере
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`&НаСервере
 				Процедура ДобавитьРегистрНаСервере()
 	
-				КонецПроцедуры`
+				КонецПроцедуры`).AnyTimes()
+
+		tok := new(Token)
 
 		result := map[string]int{
 			"&НаСервере":               Directive,
@@ -294,17 +319,19 @@ func Test_Next(t *testing.T) {
 			"\n":                       10,
 		}
 
-		for token, err := tok.Next(code); err == nil && token > 0; token, err = tok.Next(code) {
+		for token, err := tok.Next(ast); err == nil && token > 0; token, err = tok.Next(ast) {
 			assert.Equal(t, token, result[tok.literal])
 		}
 	})
 
 	t.Run("goto", func(t *testing.T) {
-		tok := new(Token)
-		code := `Процедура ДобавитьРегистрНаСервере()
+		ast := mock_ast.NewMockIast(c)
+		ast.EXPECT().SrsCode().Return(`Процедура ДобавитьРегистрНаСервере()
 				перейти ~метка;
 				~метка:
-				КонецПроцедуры`
+				КонецПроцедуры`).AnyTimes()
+
+		tok := new(Token)
 
 		result := map[string]int{
 			"Процедура": Procedure,
@@ -318,13 +345,18 @@ func Test_Next(t *testing.T) {
 			":":                        ':',
 		}
 
-		for token, err := tok.Next(code); err == nil && token > 0; token, err = tok.Next(code) {
+		for token, err := tok.Next(ast); err == nil && token > 0; token, err = tok.Next(ast) {
 			assert.Equal(t, token, result[tok.literal])
 		}
 	})
 }
 
 func Benchmark(b *testing.B) {
+	c := gomock.NewController(b)
+	defer c.Finish()
+
+	ast := mock_ast.NewMockIast(c)
+
 	b.Run("isDigit", func(b *testing.B) {
 		str := "12324567376566736kl"
 		b.Run("tLoop", func(b *testing.B) {
@@ -351,7 +383,7 @@ func Benchmark(b *testing.B) {
 				strings.ToLower(str)
 			}
 		})
-		b.Run("bicycle", func(b *testing.B) {
+		b.Run("fastToLower", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				fastToLower(str)
 			}
@@ -379,8 +411,7 @@ func Benchmark(b *testing.B) {
 		_ = test
 	})
 	b.Run("next", func(b *testing.B) {
-		tok := new(Token)
-		tok.srs = `
+		ast.EXPECT().SrsCode().Return(`
 
 Процедура ОткрытьНавигационнуюСсылку(НавигационнаяСсылка, Знач Оповещение = Неопределено) Экспорт
 
@@ -458,8 +489,10 @@ func Benchmark(b *testing.B) {
 		ОткрытьСправку(НавигационнаяСсылка);
 		Возврат;
 	КонецЕсли;
-КонецПроцедуры`
+КонецПроцедуры`)
 
+		tok := new(Token)
+		tok.ast = ast
 		for i := 0; i < b.N; i++ {
 			for _, _, err := tok.next(); err != nil; _, _, err = tok.next() {
 

@@ -9,6 +9,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/golang/mock v1.6.0 // indirect
 	github.com/matryer/resync v0.0.0-20161211202428-d39c09a11215 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/szampardi/resync v0.0.0-20210519002709-e9d303c16c3c // indirect

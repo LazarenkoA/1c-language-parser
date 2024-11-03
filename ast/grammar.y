@@ -20,6 +20,7 @@ package ast
 %type<declarations_method_params> declarations_method_params
 %type<declarations_method_param> declarations_method_param
 %type<opt_expr> opt_expr
+%type<execute_param> execute_param
 %type<through_dot> through_dot
 %type<new_object> new_object
 %type<ternary> ternary
@@ -55,7 +56,8 @@ package ast
     declarations_method_params []ParamStatement
     declarations_method_param ParamStatement
     expr Statement
-    opt_expr Statement  
+    opt_expr Statement
+    execute_param Statement
     exprs []Statement
     opt_export *Token
     opt_directive *Token
@@ -72,7 +74,7 @@ package ast
 }
 
 %token<token> Directive Identifier Procedure Var EndProcedure If Then ElseIf Else EndIf For Each In To Loop EndLoop Break Not ValueParam While GoToLabel
-%token<token> Continue Try Catch EndTry Number String New Function EndFunction Return Throw NeEq Le Ge Or And True False Undefind Export Date GoTo
+%token<token> Continue Try Catch EndTry Number String New Function EndFunction Return Throw NeEq Le Ge Or And True False Undefind Export Date GoTo Execute
 
 
 //%right '='
@@ -279,11 +281,18 @@ through_dot: identifier { $$ = $1 }
         | through_dot dot identifier { $$ = CallChainStatement{ Unit: $3, Call:  $1 } }
 ;
 
+/* вызовы процедур, функций */
+/* вызовы выполнить */
+/* выполнить может вызываться так выполнить("что-то") или так выполнить "что-то" */
 identifier: Identifier { $$ = VarStatement{ Name: $1.literal } }
         | Identifier '(' exprs ')' { $$ = MethodStatement{ Name: $1.literal, Param: $3 } }
         | identifier '[' expr ']' { $$ = ItemStatement{ Object: $1, Item: $3 } }
+        | Execute execute_param { $$ = MethodStatement{ Name: $1.literal, Param: []Statement{$2} } }
+        | Execute '(' expr ')' { $$ = MethodStatement{ Name: $1.literal, Param:  []Statement{$3} } }
 ;
 
+execute_param: String { $$ = $1.value  }
+             | Identifier { $$ = VarStatement{ Name: $1.literal }};
 
 /* попытка */
 stmt_tryCatch: Try opt_body Catch { setTryFlag(true, yylex) } opt_body EndTry { 
