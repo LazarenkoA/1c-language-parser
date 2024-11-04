@@ -30,7 +30,15 @@ func (ast *AstNode) Print(conf PrintConf) string {
 	return p.print()
 }
 
-func (ast *AstNode) PrintStatement(stat Statement, conf PrintConf) string {
+func (ast *AstNode) PrintStatement(stat Statement) string {
+	if stat == nil {
+		return ""
+	}
+
+	return ast.PrintStatementWithConf(stat, PrintConf{Margin: 4})
+}
+
+func (ast *AstNode) PrintStatementWithConf(stat Statement, conf PrintConf) string {
 	if stat == nil {
 		return ""
 	}

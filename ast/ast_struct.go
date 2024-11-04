@@ -212,6 +212,12 @@ func (e CallChainStatement) Not() interface{} {
 	return e
 }
 
+// IsMethod вернет true в случаях Блокировка.Заблокировать() и false для Источник.Ссылка
+func (e CallChainStatement) IsMethod() bool {
+	_, ok := e.Unit.(MethodStatement)
+	return ok
+}
+
 func (e MethodStatement) Not() interface{} {
 	e.not = true
 	return e
@@ -312,6 +318,7 @@ func walkHelper(parent *FunctionOrProcedure, statements []Statement, callBack fu
 	for i, item := range statements {
 		switch v := item.(type) {
 		case *IfStatement:
+			walkHelper(parent, []Statement{v.Expression}, callBack)
 			walkHelper(parent, v.TrueBlock, callBack)
 			walkHelper(parent, v.ElseBlock, callBack)
 			walkHelper(parent, v.IfElseBlock, callBack)
@@ -323,9 +330,21 @@ func walkHelper(parent *FunctionOrProcedure, statements []Statement, callBack fu
 		case *FunctionOrProcedure:
 			walkHelper(v, v.Body, callBack)
 			parent = v
+		case MethodStatement:
+			walkHelper(parent, v.Param, callBack)
+		//case CallChainStatement:
+		//	walkHelper(parent, []Statement{v.Unit}, callBack)
+		case *ExpStatement:
+			walkHelper(parent, []Statement{v.Right}, callBack)
+			walkHelper(parent, []Statement{v.Left}, callBack)
+		case TernaryStatement:
+			walkHelper(parent, []Statement{v.Expression}, callBack)
+			walkHelper(parent, []Statement{v.TrueBlock}, callBack)
+			walkHelper(parent, []Statement{v.ElseBlock}, callBack)
+		case *ReturnStatement:
+			walkHelper(parent, []Statement{v.Param}, callBack)
 		}
 
 		callBack(parent, &statements[i])
 	}
-
 }

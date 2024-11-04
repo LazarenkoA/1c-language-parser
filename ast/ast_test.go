@@ -1348,9 +1348,6 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			assert.NoError(t, err)
-
-			// p := a.Print(PrintConf{Margin: 4})
-			// fmt.Println(p)
 		})
 		t.Run("through_dot pass", func(t *testing.T) {
 			code := `Процедура ЗагрузитьОбъекты(Задание, Отказ = Ложь) Экспорт
