@@ -349,6 +349,49 @@ func Test_Next(t *testing.T) {
 			assert.Equal(t, token, result[tok.literal])
 		}
 	})
+
+	t.Run("date", func(t *testing.T) {
+		t.Run("test1", func(t *testing.T) {
+			ast := mock_ast.NewMockIast(c)
+			ast.EXPECT().SrsCode().Return(`test = '20241111'`).AnyTimes()
+
+			tok := new(Token)
+
+			token, err := tok.Next(ast)
+			assert.NoError(t, err)
+			assert.Equal(t, "test", tok.literal)
+			assert.Equal(t, token, Identifier)
+
+			token, err = tok.Next(ast)
+			assert.NoError(t, err)
+			assert.Equal(t, "=", tok.literal)
+
+			token, err = tok.Next(ast)
+			assert.NoError(t, err)
+			assert.Equal(t, "20241111", tok.literal)
+			assert.Equal(t, token, Date)
+		})
+		t.Run("test2", func(t *testing.T) {
+			ast := mock_ast.NewMockIast(c)
+			ast.EXPECT().SrsCode().Return(`test = '00000000'`).AnyTimes()
+
+			tok := new(Token)
+
+			token, err := tok.Next(ast)
+			assert.NoError(t, err)
+			assert.Equal(t, "test", tok.literal)
+			assert.Equal(t, token, Identifier)
+
+			token, err = tok.Next(ast)
+			assert.NoError(t, err)
+			assert.Equal(t, "=", tok.literal)
+
+			token, err = tok.Next(ast)
+			assert.NoError(t, err)
+			assert.Equal(t, "00000000", tok.literal)
+			assert.Equal(t, token, Date)
+		})
+	})
 }
 
 func Benchmark(b *testing.B) {

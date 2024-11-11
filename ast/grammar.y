@@ -10,25 +10,26 @@ package ast
 %type<stmt_if> stmt_if
 %type<opt_elseif_list> opt_elseif_list
 %type<opt_else> opt_else
-%type<opt_stmt> opt_stmt
-%type<opt_param> opt_param
+%type<stmt> opt_stmt
+%type<stmt> opt_param
 %type<exprs> exprs 
-%type<expr> expr
+%type<stmt> expr
 %type<opt_export> opt_export
 %type<opt_directive> opt_directive 
-%type<simple_expr> simple_expr 
+%type<stmt> simple_expr
 %type<declarations_method_params> declarations_method_params
 %type<declarations_method_param> declarations_method_param
-%type<opt_expr> opt_expr
-%type<execute_param> execute_param
-%type<through_dot> through_dot
-%type<new_object> new_object
-%type<ternary> ternary
+%type<stmt> opt_expr
+%type<stmt> execute_param
+%type<stmt> through_dot
+%type<stmt> loopExp
+%type<stmt> new_object
+%type<stmt> ternary
 %type<opt_explicit_variables> opt_explicit_variables
 %type<explicit_variables> explicit_variables
 %type<identifiers> identifiers
-%type<stmt_tryCatch> stmt_tryCatch
-%type<identifier> identifier
+%type<stmt> stmt_tryCatch
+%type<stmt> identifier
 %type<goToLabel> goToLabel
 %type<token> separator
 %type<token> semicolon
@@ -45,30 +46,19 @@ package ast
     opt_elseif_list []Statement
     opt_else []Statement
     stmt    Statement
-    opt_stmt Statement
-    stmt_tryCatch Statement
     stmt_loop *LoopStatement
     funcProc *FunctionOrProcedure
     body []Statement
     opt_body []Statement
-    opt_param Statement
-    through_dot Statement
     declarations_method_params []ParamStatement
     declarations_method_param ParamStatement
-    expr Statement
-    opt_expr Statement
-    execute_param Statement
     exprs []Statement
     opt_export *Token
     opt_directive *Token
-    simple_expr Statement
-    new_object Statement
-    ternary Statement
     explicit_variables map[string]VarStatement
     global_variables []GlobalVariables
     opt_explicit_variables map[string]VarStatement
     identifiers []Token
-    identifier Statement
     goToLabel *GoToLabelStatement
     opt_goToLabel *GoToLabelStatement
 }
@@ -94,7 +84,8 @@ package ast
 %left '>' '<'
 %left '+' '-'
 %left '*' '/' '%'
-%right UNARY
+%right UNARMinus UNARYPlus
+
 
 %%
 
@@ -238,7 +229,7 @@ ternary: '?' '(' expr comma expr comma expr ')' {
 };
 
 /* циклы */
-stmt_loop: For Each Identifier In through_dot Loop { setLoopFlag(true, yylex) } opt_body EndLoop { 
+stmt_loop: For Each Identifier In loopExp Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
         $$ = &LoopStatement{
             For: $3.literal,
             In: $5,
@@ -260,6 +251,13 @@ stmt_loop: For Each Identifier In through_dot Loop { setLoopFlag(true, yylex) } 
             Body: $5,
         }
 };
+
+
+/* описыввает выражения которые можно использовать в циккле Для Каждого */
+loopExp: through_dot { $$ = $1 }
+        | new_object { $$ = $1 }
+        |'(' new_object ')' { $$ = $2 }
+;
 
 stmt : expr { $$ = $1 }
     | stmt_if { $$ = $1 }
@@ -311,7 +309,6 @@ expr : simple_expr { $$ = $1 }
     | expr '>' expr { $$ = &ExpStatement{Operation: OpGt, Left: $1, Right: $3} }
     | expr '<' expr { $$ = &ExpStatement{Operation: OpLt, Left: $1, Right: $3} }
 	| expr '=' expr { $$ = &ExpStatement{Operation: OpEq, Left: $1, Right: $3 } }
-    | '-' expr %prec UNARY { $$ = unary($2) }
     | expr Or expr {  $$ = &ExpStatement{Operation: OpOr, Left: $1, Right: $3 } } 
     | expr And expr { $$ = &ExpStatement{Operation: OpAnd, Left: $1, Right: $3 } } 
     | expr NeEq expr { $$ = &ExpStatement{Operation: OpNe, Left: $1, Right: $3 } }
@@ -347,6 +344,8 @@ new_object:  New Identifier { $$ = NewObjectStatement{ Constructor: $2.literal }
 
 simple_expr:  String { $$ = $1.value  }
             | Number { $$ =  $1.value }
+            | '-' expr %prec UNARMinus { $$ = unaryMinus($2) }
+            | '+' expr %prec UNARYPlus { $$ = $2 }
             | True { $$ =  $1.value  }
             | False { $$ =  $1.value  }
             | Date { $$ =  $1.value  }

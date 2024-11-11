@@ -708,6 +708,24 @@ func TestParseLoop(t *testing.T) {
 		err := a.Parse()
 		assert.NoError(t, err)
 	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура ПодключитьВнешнююОбработку()
+					Для Каждого КлючЗначение Из Новый Структура(СписокКолонок) Цикл
+						
+					КонецЦикла;
+					Для Каждого КлючЗначение Из (Новый Структура(СписокКолонок2)) Цикл
+						
+					КонецЦикла;
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		assert.NoError(t, err)
+		if !t.Failed() {
+			p := a.Print(PrintConf{Margin: 0})
+			assert.Equal(t, "Процедура ПодключитьВнешнююОбработку() \nДля Каждого КлючЗначение Из Новый Структура(СписокКолонок) Цикл \nКонецЦикла;\nДля Каждого КлючЗначение Из Новый Структура(СписокКолонок2) Цикл \nКонецЦикла;\nКонецПроцедуры", deleteEmptyLine(p))
+		}
+	})
 	t.Run("error", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
 					Для а = 0 По 100 Цикл            
@@ -1375,32 +1393,20 @@ func TestParseFunctionProcedure(t *testing.T) {
 				КонецПроцедуры
 
 				&НаКлиенте
-				Функция ОчиститьПараметрыТЖ(парам1, парам2 = Неопределено) Экспорт
+				Функция ОчиститьПараметрыТЖ(парам1 = 1, парам2 = Неопределено, парам3 = -1) Экспорт
 					Возврат 100;
 				КонецФункции
 
 				Функция ПарамТарам(Знач парам1)
-					возврат;
+					возврат +1;
 				КонецФункции`
 
 		a := NewAST(code)
 		err := a.Parse()
 		assert.NoError(t, err)
 		if !t.Failed() {
-			assert.Equal(t, 3, len(a.ModuleStatement.Body))
-		}
-		if !t.Failed() {
-			assert.Equal(t, "ПодключитьВнешнююОбработку", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Name)
-			assert.Equal(t, "ОчиститьПараметрыТЖ", a.ModuleStatement.Body[1].(*FunctionOrProcedure).Name)
-			assert.Equal(t, "ПарамТарам", a.ModuleStatement.Body[2].(*FunctionOrProcedure).Name)
-
-			assert.Equal(t, 0, len(a.ModuleStatement.Body[0].(*FunctionOrProcedure).Params))
-			assert.Equal(t, 2, len(a.ModuleStatement.Body[1].(*FunctionOrProcedure).Params))
-			assert.Equal(t, 1, len(a.ModuleStatement.Body[2].(*FunctionOrProcedure).Params))
-
-			assert.Equal(t, "&Насервере", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Directive)
-			assert.Equal(t, "&НаКлиенте", a.ModuleStatement.Body[1].(*FunctionOrProcedure).Directive)
-			assert.Equal(t, "", a.ModuleStatement.Body[2].(*FunctionOrProcedure).Directive)
+			p := a.Print(PrintConf{Margin: 0})
+			assert.Equal(t, "&Насервере\nПроцедура ПодключитьВнешнююОбработку() \nВозврат;\nКонецПроцедуры \n&НаКлиенте\nФункция ОчиститьПараметрыТЖ(парам1 = 1, парам2 = Неопределено, парам3 = -1) Экспорт \nВозврат 100;\nКонецФункции \nФункция ПарамТарам(Знач парам1) \nВозврат 1;\nКонецФункции", deleteEmptyLine(p))
 		}
 	})
 }
@@ -1790,4 +1796,15 @@ func compareHashes(str1, str2 string) bool {
 	hash2 := sha256.Sum256([]byte(fastToLower(str2)))
 
 	return hash1 == hash2
+}
+
+func deleteEmptyLine(str string) string {
+	result := strings.Builder{}
+	for _, line := range strings.Split(str, "\n") {
+		if strings.TrimSpace(line) != "" {
+			result.WriteString(line + "\n")
+		}
+	}
+
+	return strings.TrimSpace(result.String())
 }

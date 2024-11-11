@@ -100,6 +100,12 @@ func (t *Token) Next(ast Iast) (token int, err error) {
 	case Date:
 		formats := []string{"20060102", "200601021504", "20060102150405"} // Допускается опускать либо время целиком, либо только секунды.
 		for _, f := range formats {
+			// если все 0 это равносильно пустой дате
+			if strings.Count(t.literal, "0") == len(t.literal) {
+				t.value = time.Time{}
+				return
+			}
+
 			if t.value, err = time.Parse(f, t.literal); err == nil {
 				break
 			}

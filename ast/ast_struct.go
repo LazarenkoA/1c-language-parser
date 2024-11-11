@@ -28,7 +28,7 @@ const (
 )
 
 type IUnary interface {
-	Unary() interface{}
+	UnaryMinus() interface{}
 }
 
 type INot interface {
@@ -75,8 +75,9 @@ type ParamStatement struct {
 }
 
 type addStatementField struct {
-	unary bool
-	not   bool
+	unaryMinus bool
+	unaryPlus  bool
+	not        bool
 }
 
 type ExpStatement struct {
@@ -182,8 +183,8 @@ func (p *ParamStatement) DefaultValue(value Statement) *ParamStatement {
 	return p
 }
 
-func (e *ExpStatement) Unary() interface{} {
-	e.unary = true
+func (e *ExpStatement) UnaryMinus() interface{} {
+	e.unaryMinus = true
 	return e
 }
 
@@ -192,8 +193,8 @@ func (e *ExpStatement) Not() interface{} {
 	return e
 }
 
-func (e VarStatement) Unary() interface{} {
-	e.unary = true
+func (e VarStatement) UnaryMinus() interface{} {
+	e.unaryMinus = true
 	return e
 }
 
@@ -202,8 +203,8 @@ func (e VarStatement) Not() interface{} {
 	return e
 }
 
-func (e CallChainStatement) Unary() interface{} {
-	e.unary = true
+func (e CallChainStatement) UnaryMinus() interface{} {
+	e.unaryMinus = true
 	return e
 }
 

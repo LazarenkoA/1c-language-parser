@@ -336,11 +336,11 @@ func (p *astPrint) printExpression(expr Statement) (result string) {
 		if v.not {
 			builder.WriteString("Не ")
 		}
-		if v.unary {
+		if v.unaryMinus {
 			builder.WriteString("-")
 		}
 
-		if v.unary || v.not {
+		if v.unaryMinus || v.not {
 			builder.WriteString("(")
 		}
 
@@ -350,14 +350,14 @@ func (p *astPrint) printExpression(expr Statement) (result string) {
 		builder.WriteString(" ")
 		builder.WriteString(p.printExpression(v.Right))
 
-		if v.unary || v.not {
+		if v.unaryMinus || v.not {
 			builder.WriteString(")")
 		}
 	case VarStatement:
 		if v.not {
 			builder.WriteString("Не ")
 		}
-		if v.unary {
+		if v.unaryMinus {
 			builder.WriteString("-")
 		}
 		builder.WriteString(p.printVarStatement(v))

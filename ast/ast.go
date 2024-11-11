@@ -155,7 +155,7 @@ func appendVarStatements(existingVariables map[string]VarStatement, newVariables
 	return existingVariables, nil
 }
 
-func unary(iv interface{}) interface{} {
+func unaryMinus(iv interface{}) interface{} {
 	switch v := iv.(type) {
 	case int:
 		return -v
@@ -168,7 +168,7 @@ func unary(iv interface{}) interface{} {
 	case float64:
 		return -v
 	case IUnary:
-		return v.Unary()
+		return v.UnaryMinus()
 	default:
 		return v
 	}
