@@ -9,6 +9,7 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf8"
+	"unsafe"
 )
 
 //go:generate mockgen -source=$GOFILE -destination=./mock/mock.go
@@ -133,19 +134,21 @@ func (t *Token) next() (int, string, error) {
 		} else {
 			return Identifier, literal, nil
 		}
+	case let == '.':
+		// если после точки у нас следует идентификатор то нам нужно читать его обычным идентификатором
+		// Могут быть таие случаи стр.Истина = 1 или стр.Функция = 2 (стр в данном случае какой-то объект, например структура)
+		// нам нужно что бы то что следует после точки считалось Identifier, а не определенным зарезервированным токеном
+		t.prevDot = true
+
+		t.nextPos()
+		return int(let), string(let), nil
 	case isDigit(let):
 		if literal, err := t.scanNumber(); err != nil {
 			return EOF, emptyLit, err
 		} else {
 			return Number, literal, nil
 		}
-	case let == '"':
-		literal, err := t.scanString(let)
-		if err != nil {
-			return EOF, emptyLit, err
-		}
 
-		return String, literal, nil
 	case let == 0x27:
 		literal, err := t.scanString(let)
 		if err != nil {
@@ -158,9 +161,16 @@ func (t *Token) next() (int, string, error) {
 		}
 
 		return Date, literal, nil
-	case let == '=' || let == '-' || let == '+' || let == '*' || let == '/' || let == '(' || let == '?' || let == ')' || let == '[' || let == ']' || let == ':' || let == ';' || let == ',' || let == '%':
+	case let == '/' || let == ';' || let == '(' || let == ')' || let == ',' || let == '=' || let == '-' || let == '+' || let == '*' || let == '?' || let == '[' || let == ']' || let == ':' || let == '%':
 		t.nextPos()
 		return int(let), string(let), nil
+	case let == '"':
+		literal, err := t.scanString(let)
+		if err != nil {
+			return EOF, emptyLit, err
+		}
+
+		return String, literal, nil
 	case let == '<':
 		if t.nextLet() == '>' {
 			t.nextPos()
@@ -189,14 +199,7 @@ func (t *Token) next() (int, string, error) {
 	// if err != nil {
 	// 	return EOF, emptyLit, err
 	// }
-	case let == '.':
-		// если после точки у нас следует идентификатор то нам нужно читать его обычным идентификатором
-		// Могут быть таие случаи стр.Истина = 1 или стр.Функция = 2 (стр в данном случае какой-то объект, например структура)
-		// нам нужно что бы то что следует после точки считалось Identifier, а не определенным зарезервированным токеном
-		t.prevDot = true
 
-		t.nextPos()
-		return int(let), string(let), nil
 	case let == '&':
 		t.nextPos()
 		pos := t.offset
@@ -229,7 +232,7 @@ func (t *Token) next() (int, string, error) {
 }
 
 func (t *Token) scanIdentifier() string {
-	var ret []rune
+	ret := make([]rune, 0, 10) // как правило встречаются короткие идентификаторы и лучше предаллоцировать, это сильный буст дает
 
 	for {
 		let := t.currentLet()
@@ -452,5 +455,5 @@ func fastToLower(s string) string {
 	}
 
 	// Возвращаем строку, преобразованную обратно из среза байт
-	return string(b)
+	return *(*string)(unsafe.Pointer(&b))
 }

@@ -1769,26 +1769,6 @@ func BenchmarkString(b *testing.B) {
 	//})
 }
 
-func Benchmark_fastToLower(b *testing.B) {
-	str := "rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfd rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfdrdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfd rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfdrdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfd rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs dfdf dsfdrdedfs rdedfs dfdf dsfd rdedfs dfdf dsfdrdedfs dfdf выавквуваы dfdf dsFDRDEDFS DFDF DSFDRDEDFS DFDF DSFD RDEDFS DFDF DSFDRDEDFS DFDF DSFDRDEDFS dfdf dsfdrdedfs dfdf dsfd dfdf dsfd"
-
-	b.Run("sdk", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			strings.ToLower(str)
-		}
-	})
-	b.Run("fastToLower", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			fastToLower_old(str)
-		}
-	})
-	b.Run("fastToLower", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			fastToLower(str)
-		}
-	})
-}
-
 func test(str string) {
 
 }

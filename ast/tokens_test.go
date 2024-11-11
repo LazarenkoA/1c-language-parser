@@ -376,19 +376,6 @@ func Benchmark(b *testing.B) {
 			}
 		})
 	})
-	b.Run("toLower", func(b *testing.B) {
-		str := "АывыввввввввввввввввввввввввввввввсавукавамвамваепмкеккеАа"
-		b.Run("classic", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				strings.ToLower(str)
-			}
-		})
-		b.Run("fastToLower", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				fastToLower(str)
-			}
-		})
-	})
 	b.Run("string concatenation", func(b *testing.B) {
 		var test string
 		b.Run("strings.Builder", func(b *testing.B) {
@@ -516,4 +503,24 @@ func generateRandomString(length int) string {
 		return ""
 	}
 	return strings.TrimRight(string(b), "\x00")
+}
+
+func Benchmark_fastToLower(b *testing.B) {
+	str := "ЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHЫСВАМВАОЛОРЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJЫСВАМВАОЛОРИЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJЫСВАМВАОЛОРИИОРОВИЫОРСЫВРООЫОРВЫРОJHDSDHSDSJDDSHDSJHDJSDERKRVEKVJDSJHDJSDERKRVEKVJ"
+
+	b.Run("sdk", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			strings.ToLower(str)
+		}
+	})
+	b.Run("fastToLower-old", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fastToLower_old(str)
+		}
+	})
+	b.Run("fastToLower", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fastToLower(str)
+		}
+	})
 }
