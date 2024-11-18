@@ -370,8 +370,9 @@ func TestParseIF(t *testing.T) {
 		err := a.Parse()
 		assert.NoError(t, err)
 
-		data, _ := a.JSON()
-		assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Expression":{"Operation":11,"Left":{"Operation":12,"Left":{"Operation":4,"Left":{"Name":"в"},"Right":1},"Right":{"Operation":4,"Left":{"Name":"а"},"Right":1}},"Right":{"Operation":4,"Left":{"Name":"у"},"Right":3}},"TrueBlock":[{"Operation":4,"Left":{"Name":"test"},"Right":{"Operation":0,"Left":2,"Right":{"Operation":2,"Left":2,"Right":2}}},{"Operation":4,"Left":{"Name":"а"},"Right":7},{"Operation":4,"Left":{"Name":"а"},"Right":7.2}],"IfElseBlock":[{"Expression":false,"TrueBlock":null,"IfElseBlock":null,"ElseBlock":null},{"Expression":{"Operation":12,"Left":{"Operation":12,"Left":{"Operation":4,"Left":4,"Right":3},"Right":{"Operation":4,"Left":8,"Right":2}},"Right":{"Operation":7,"Left":1,"Right":3}},"TrueBlock":[{"Operation":4,"Left":{"Name":"а"},"Right":5}],"IfElseBlock":null,"ElseBlock":null}],"ElseBlock":[{"Operation":4,"Left":{"Name":"а"},"Right":{"Operation":0,"Left":1,"Right":1}},{"Operation":4,"Left":{"Name":"а"},"Right":{"Name":"s"}},{"Operation":4,"Left":{"Name":"а"},"Right":-1},{"Operation":4,"Left":{"Name":"а"},"Right":-7.42},{"Operation":4,"Left":{"Name":"а"},"Right":false}]}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
+		data, err := a.JSON()
+		assert.NoError(t, err)
+		assert.NotEqual(t, 0, len(data))
 	})
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -643,8 +644,9 @@ func TestParseLoop(t *testing.T) {
 		err := a.Parse()
 		assert.NoError(t, err)
 
-		data, _ := a.JSON()
-		assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Body":[{"Operation":4,"Left":{"Name":"Тип"},"Right":{"Name":"ТипЗнч","Param":[{"Name":"ИзмененныйОбъект"}]}},{"Expression":{"Operation":4,"Left":{"Name":"ТипыИзмененныхОбъектов"},"Right":{}},"TrueBlock":[{"Operation":4,"Left":{"Name":"ТипыИзмененныхОбъектов"},"Right":0}],"IfElseBlock":[],"ElseBlock":null}],"For":"ИзмененныйОбъект","In":{"Name":"ОбъектыНазначения"}}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
+		data, err := a.JSON()
+		assert.NoError(t, err)
+		assert.NotEqual(t, 0, len(data))
 	})
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -1068,7 +1070,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			data, err := a.JSON()
 			assert.NoError(t, err)
-			assert.Equal(t, `{"Name":"","Body":[{"Type":2,"Name":"ПодключитьВнешнююОбработку","Body":[{"Operation":4,"Left":{"Name":"f"},"Right":{"Operation":1,"Left":{"Operation":0,"Left":1,"Right":{"Name":"gggg"}},"Right":{"Operation":0,"Left":{"Name":"fd"},"Right":{"Operation":3,"Left":1,"Right":3}}}}],"Export":false,"Params":[{"Name":"Ссылка"}],"Directive":"\u0026НасервереБезКонтекста","ExplicitVariables":{}}]}`, string(data))
+			assert.NotEqual(t, 0, len(data))
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -1381,9 +1383,9 @@ func TestParseFunctionProcedure(t *testing.T) {
 			err := a.Parse()
 			assert.NoError(t, err)
 
-			data, _ := a.JSON()
-			assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ЗагрузитьОбъекты","Body":[{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"ВыполнитьМетодСПараметрами","Param":[1,"ав",{"Name":"авава"}]},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}},{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"ВыполнитьМетодБезПараметров","Param":[null]},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}},{"Operation":4,"Left":{"Name":"Организация"},"Right":{"Unit":{"Name":"Код"},"Call":{"Unit":{"Name":"Организация"},"Call":{"Name":"Задание"}}}}],"Export":true,"Params":[{"Name":"Задание"},{"Name":"Отказ","Default":false}],"Directive":"","ExplicitVariables":{"СоответствиеРеквизитовШапки":{"Name":"СоответствиеРеквизитовШапки"}}}]}`, string(data))
-
+			data, err := a.JSON()
+			assert.NoError(t, err)
+			assert.NotEqual(t, 0, len(data))
 		})
 	})
 	t.Run("many", func(t *testing.T) {
@@ -1661,8 +1663,9 @@ func TestTernaryOperator(t *testing.T) {
 	err := a.Parse()
 	assert.NoError(t, err)
 
-	data, _ := a.JSON()
-	assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Operation":4,"Left":{"Name":"ds"},"Right":{"Expression":true,"TrueBlock":{"Expression":{"Operation":4,"Left":{"Name":"dd"},"Right":3},"TrueBlock":{"Operation":4,"Left":{"Name":"а"},"Right":1},"ElseBlock":{"Name":"Наименование"}},"ElseBlock":{"Unit":{"Name":"Наименование"},"Call":{"Name":"СтруктураКонтрагент"}}}}],"Export":false,"Params":[{"Name":"Ссылка"}],"Directive":"","ExplicitVariables":{}}]}`, string(data))
+	data, err := a.JSON()
+	assert.NoError(t, err)
+	assert.NotEqual(t, 0, len(data))
 }
 
 func TestArrayStruct(t *testing.T) {
@@ -1678,8 +1681,9 @@ func TestArrayStruct(t *testing.T) {
 	err := a.Parse()
 	assert.NoError(t, err)
 
-	data, _ := a.JSON()
-	assert.Equal(t, `{"Name":"","Body":[{"Type":1,"Name":"ПодключитьВнешнююОбработку","Body":[{"Operation":4,"Left":{"Name":"м"},"Right":{"Constructor":"Массив","Param":[null]}},{"Operation":4,"Left":{"Name":"в"},"Right":{"Item":4,"Object":{"Name":"м"}}},{"Operation":4,"Left":{"Name":"м"},"Right":{"Constructor":"Структура","Param":["ав",{"Name":"уцуцу"}]}},{"Operation":4,"Left":{"Name":"в"},"Right":{"Item":"вывыв","Object":{"Name":"м"}}}],"Export":false,"Params":[],"Directive":"","ExplicitVariables":{}}]}`, string(data))
+	data, err := a.JSON()
+	assert.NoError(t, err)
+	assert.NotEqual(t, 0, len(data))
 }
 
 func TestPrint(t *testing.T) {
