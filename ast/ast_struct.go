@@ -43,8 +43,8 @@ type Statement interface{}
 
 type GlobalVariables struct {
 	Directive string
-	Export    bool
 	Var       VarStatement
+	Export    bool
 }
 
 type ModuleStatement struct {
@@ -54,24 +54,24 @@ type ModuleStatement struct {
 }
 
 type VarStatement struct {
-	addStatementField
 	Name string
+	addStatementField
 }
 
 type FunctionOrProcedure struct {
-	Type              StatementType
-	Name              string
-	Body              []Statement
-	Export            bool
-	Params            []ParamStatement
-	Directive         string
 	ExplicitVariables map[string]VarStatement
+	Name              string
+	Directive         string
+	Body              []Statement
+	Params            []ParamStatement
+	Type              StatementType
+	Export            bool
 }
 
 type ParamStatement struct {
-	Name    string
-	IsValue bool      `json:"IsValue,omitempty"`
 	Default Statement `json:"Default,omitempty"`
+	Name    string
+	IsValue bool `json:"IsValue,omitempty"`
 }
 
 type addStatementField struct {
@@ -81,11 +81,10 @@ type addStatementField struct {
 }
 
 type ExpStatement struct {
-	addStatementField
-
-	Operation OperationType
 	Left      interface{}
 	Right     interface{}
+	Operation OperationType
+	addStatementField
 }
 
 // type IfElseStatement struct {
@@ -121,17 +120,15 @@ type NewObjectStatement struct {
 }
 
 type CallChainStatement struct {
-	addStatementField
-
 	Unit Statement
 	Call Statement
+	addStatementField
 }
 
 type MethodStatement struct {
-	addStatementField
-
 	Name  string
 	Param []Statement
+	addStatementField
 }
 
 type BreakStatement struct {
@@ -141,11 +138,11 @@ type ContinueStatement struct {
 }
 
 type LoopStatement struct {
-	Body      []Statement
 	For       Statement `json:"For,omitempty"`
 	To        Statement `json:"To,omitempty"`
 	In        Statement `json:"In,omitempty"`
 	WhileExpr Statement `json:"WhileExpr,omitempty"`
+	Body      []Statement
 }
 
 type TernaryStatement struct {

@@ -10,27 +10,27 @@ import __yyfmt__ "fmt"
 
 //line .\grammar.y:43
 type yySymType struct {
-	yys                        int
-	token                      Token
-	stmt_if                    *IfStatement
-	opt_elseif_list            []Statement
-	opt_else                   []Statement
 	stmt                       Statement
+	opt_directive              *Token
+	goToLabel                  *GoToLabelStatement
+	opt_export                 *Token
+	opt_goToLabel              *GoToLabelStatement
+	stmt_if                    *IfStatement
 	stmt_loop                  *LoopStatement
 	funcProc                   *FunctionOrProcedure
-	body                       []Statement
-	opt_body                   []Statement
-	declarations_method_params []ParamStatement
-	declarations_method_param  ParamStatement
-	exprs                      []Statement
-	opt_export                 *Token
-	opt_directive              *Token
-	explicit_variables         map[string]VarStatement
-	global_variables           []GlobalVariables
 	opt_explicit_variables     map[string]VarStatement
+	explicit_variables         map[string]VarStatement
+	declarations_method_param  ParamStatement
+	body                       []Statement
+	exprs                      []Statement
+	opt_elseif_list            []Statement
+	declarations_method_params []ParamStatement
+	global_variables           []GlobalVariables
+	opt_body                   []Statement
 	identifiers                []Token
-	goToLabel                  *GoToLabelStatement
-	opt_goToLabel              *GoToLabelStatement
+	opt_else                   []Statement
+	token                      Token
+	yys                        int
 }
 
 const Directive = 57346
@@ -380,9 +380,9 @@ var yyTok3 = [...]int8{
 }
 
 var yyErrorMessages = [...]struct {
+	msg   string
 	state int
 	token int
-	msg   string
 }{}
 
 //line yaccpar:1

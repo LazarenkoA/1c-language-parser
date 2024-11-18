@@ -12,10 +12,9 @@ import (
 )
 
 type AstNode struct {
+	err  error
+	code string
 	ModuleStatement
-
-	code         string
-	err          error
 	currentToken Token
 	isLoop       atomic.Int32
 	isTry        atomic.Int32

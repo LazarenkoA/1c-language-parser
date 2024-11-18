@@ -17,8 +17,8 @@ type PrintConf struct {
 }
 
 type astPrint struct {
-	conf PrintConf
 	ast  *AstNode
+	conf PrintConf
 }
 
 func (ast *AstNode) Print(conf PrintConf) string {

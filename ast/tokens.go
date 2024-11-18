@@ -23,11 +23,11 @@ type Position struct {
 }
 
 type Token struct {
-	offset   int
 	ast      Iast
-	position Position
-	literal  string
 	value    interface{}
+	literal  string
+	position Position
+	offset   int
 	prevDot  bool
 }
 
