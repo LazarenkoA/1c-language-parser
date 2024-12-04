@@ -437,29 +437,21 @@ func fastToLower_old(s string) string {
 }
 
 func fastToLower(s string) string {
-	// Преобразуем строку в срез байт
 	b := []byte(s)
-	i := 0
-
-	for i < len(b) {
-		// Читаем руну
-		r, size := utf8.DecodeRune(b[i:])
-
-		// Проверяем, является ли руна латинской или кириллической буквой
-		if r >= 'A' && r <= 'Z' {
-			// Латинские буквы
-			b[i] += 'a' - 'A'
-		} else if r >= 'А' && r <= 'Я' {
-			// Кириллические заглавные буквы
-			utf8.EncodeRune(b[i:], r+('а'-'А'))
-		} else if r == 'Ё' {
-			// Обрабатываем отдельно 'Ё'
-			utf8.EncodeRune(b[i:], 'ё')
+	for i, r := range s {
+		switch {
+		case r >= 'A' && r <= 'Z':
+			b[i] = s[i] + ('a' - 'A')
+		case r >= 'А' && r <= 'Я':
+			if s[i] == 208 && r > 'П' { // от "П" и дальше
+				b[i], b[i+1] = b[i]+1, s[i+1]-('а'-'А')
+			} else {
+				b[i+1] = s[i+1] + ('а' - 'А')
+			}
+		case r == 'Ё':
+			b[i], b[i+1] = 209, 145
 		}
-		// Переходим к следующему символу
-		i += size
 	}
 
-	// Возвращаем строку, преобразованную обратно из среза байт
-	return *(*string)(unsafe.Pointer(&b))
+	return unsafe.String(unsafe.SliceData(b), len(b))
 }

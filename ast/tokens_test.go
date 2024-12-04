@@ -3,6 +3,7 @@ package ast
 import (
 	"crypto/rand"
 	"fmt"
+	"github.com/LazarenkoA/1c-language-parser/ast/fast_tolower"
 	mock_ast "github.com/LazarenkoA/1c-language-parser/ast/mock"
 	"github.com/golang/mock/gomock"
 	"regexp"
@@ -566,4 +567,16 @@ func Benchmark_fastToLower(b *testing.B) {
 			fastToLower(str)
 		}
 	})
+	b.Run("fastToLowerС", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fast_tolower.FastToLower(str)
+		}
+	})
+}
+
+func Test_fastToLower(t *testing.T) {
+	str := "АаБбСсДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯяAaZz"
+
+	assert.Equal(t, fastToLower(str), strings.ToLower(str))
+	assert.Equal(t, fast_tolower.FastToLower(str), strings.ToLower(str))
 }
