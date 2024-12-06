@@ -23,7 +23,7 @@ type AstNode struct {
 
 const EOF = -1 // end of file
 var (
-	errVariableAlreadyDefined = errors.New("variable has already been defined")
+	errVariableAlreadyDefined = fmt.Errorf("variable has already been defined")
 )
 
 func NewAST(code string) *AstNode {

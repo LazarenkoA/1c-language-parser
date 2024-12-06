@@ -1622,9 +1622,7 @@ func TestParseAST(t *testing.T) {
 	assert.NoError(t, err)
 
 	p := a.Print(PrintConf{Margin: 4})
-	// fmt.Println(p)
 	assert.Equal(t, true, compareHashes(code, p))
-
 }
 
 func TestParseEmpty(t *testing.T) {
