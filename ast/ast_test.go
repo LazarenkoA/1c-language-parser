@@ -1751,6 +1751,19 @@ func TestPrint(t *testing.T) {
 	// fmt.Println(p)
 }
 
+func TestExpPriority(t *testing.T) {
+	code := `Если 1 = 2 = 3 Тогда
+			   ПриКомпоновкеРезультата();
+			КонецЕсли`
+
+	a := NewAST(code)
+	err := a.Parse()
+	if assert.NoError(t, err) {
+		jdata, _ := a.JSON()
+		assert.Equal(t, `{"Name":"","Body":[{"Expression":{"Left":{"Left":1,"Right":2,"Operation":4},"Right":3,"Operation":4},"TrueBlock":[{"Name":"ПриКомпоновкеРезультата","Param":[null]}],"IfElseBlock":[],"ElseBlock":null}]}`, string(jdata))
+	}
+}
+
 func BenchmarkString(b *testing.B) {
 	b.Run("string", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {

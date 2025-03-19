@@ -1,5 +1,6 @@
 package ast
 
+// устанока go install golang.org/x/tools/cmd/goyacc
 //go:generate goyacc  .\grammar.y
 
 import (

@@ -75,7 +75,7 @@ package ast
 %left Ge
 %left Not
 
-%right '='
+%left '='
 %left Identifier
 
 //%nonassoc NeEq '>' '<'
