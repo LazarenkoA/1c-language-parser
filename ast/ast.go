@@ -184,3 +184,77 @@ func not(iv interface{}) interface{} {
 		return v
 	}
 }
+
+// statementPostProcessing обработка-костыль готового выражения для случаев когда нужно определить присвоение в таких случаях a = b = c = d
+// это нужно из-за левой ассоциативности и то что в 1с "=" используется как для сравнения так и для присвоения
+func (ast *AstNode) statementPostProcessing(stm Statement) Statement {
+	switch v := stm.(type) {
+	case *ExpStatement:
+		if l, ok := v.Left.(*ExpStatement); ok {
+			newExp := &ExpStatement{}
+
+			if list := expStatementToList(l); len(list) > 0 {
+				newExp.Left = list[0]
+				newExp.Operation = OpEq
+
+				v.Left = leftAssociativeExpr(list[1:])
+				newExp.Right = v
+			}
+
+			return newExp
+		} else {
+			return stm
+		}
+	}
+
+	return stm
+}
+
+//func recurseLeftVar(stm Statement) *VarStatement {
+//	expStm, ok := stm.(*ExpStatement)
+//	if !ok {
+//		return nil
+//	}
+//
+//	if expStm.Left == nil {
+//		return nil
+//	}
+//
+//	if l, ok := expStm.Left.(VarStatement); ok {
+//		return &l
+//	}
+//
+//	return recurseLeftVar(expStm.Left)
+//}
+
+func leftAssociativeExpr(stm []Statement) Statement {
+	if len(stm) == 1 {
+		return stm[0]
+	}
+
+	result := &ExpStatement{
+		Left:      leftAssociativeExpr(stm[:len(stm)-1]),
+		Right:     stm[len(stm)-1],
+		Operation: OpEq,
+	}
+
+	return result
+}
+
+func expStatementToList(stm Statement) []Statement {
+	expStm, ok := stm.(*ExpStatement)
+	if !ok {
+		return []Statement{stm}
+	}
+
+	var result []Statement
+	if expStm.Left != nil {
+		result = append(result, expStatementToList(expStm.Left)...)
+	}
+
+	if expStm.Right != nil {
+		result = append(result, expStatementToList(expStm.Right)...)
+	}
+
+	return result
+}

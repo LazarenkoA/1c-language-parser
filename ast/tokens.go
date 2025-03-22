@@ -65,7 +65,7 @@ var (
 		"возврат":           Return,
 		"вызватьисключение": Throw,
 		"и":                 And,
-		"или":               Or,
+		"или":               OR,
 		"истина":            True,
 		"ложь":              False,
 		"неопределено":      Undefind,
@@ -166,9 +166,12 @@ func (t *Token) next() (int, string, error) {
 		}
 
 		return Date, literal, nil
-	case let == '/' || let == ';' || let == '(' || let == ')' || let == ',' || let == '=' || let == '-' || let == '+' || let == '*' || let == '?' || let == '[' || let == ']' || let == ':' || let == '%':
+	case let == '/' || let == ';' || let == '(' || let == ')' || let == ',' || let == '-' || let == '+' || let == '*' || let == '?' || let == '[' || let == ']' || let == ':' || let == '%':
 		t.nextPos()
 		return int(let), string(let), nil
+	case let == '=':
+		t.nextPos()
+		return EQUAL, string(let), nil
 	case let == '"':
 		literal, err := t.scanString(let)
 		if err != nil {
@@ -180,11 +183,11 @@ func (t *Token) next() (int, string, error) {
 		if t.nextLet() == '>' {
 			t.nextPos()
 			t.nextPos()
-			return NeEq, "<>", nil
+			return NeEQ, "<>", nil
 		} else if t.nextLet() == '=' {
 			t.nextPos()
 			t.nextPos()
-			return Le, "<=", nil
+			return LE, "<=", nil
 		} else {
 			t.nextPos()
 			return int(let), string(let), nil
@@ -193,7 +196,7 @@ func (t *Token) next() (int, string, error) {
 		if t.nextLet() == '=' {
 			t.nextPos()
 			t.nextPos()
-			return Ge, ">=", nil
+			return GE, ">=", nil
 		} else {
 			t.nextPos()
 			return int(let), string(let), nil

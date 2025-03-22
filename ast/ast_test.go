@@ -259,7 +259,10 @@ func TestExecute(t *testing.T) {
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.NoError(t, err)
+		if assert.NoError(t, err) {
+			jdata, _ := a.JSON()
+			assert.Equal(t, `{"Name":"","Body":[{"ExplicitVariables":{},"Name":"ВыполнитьВБезопасномРежиме","Directive":"\u0026НаСервере","Body":[{"Name":"Выполнить","Param":[{"Name":"Алгоритм"}]}],"Params":[{"Name":"Алгоритм","IsValue":true},{"Default":{},"Name":"Параметры","IsValue":true}],"Type":1,"Export":false}]}`, string(jdata))
+		}
 	})
 	t.Run("Execute-2", func(t *testing.T) {
 		code := `&НаСервере
@@ -1080,10 +1083,12 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.NoError(t, err)
-			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Operation)
-			assert.Equal(t, "f", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Left.(VarStatement).Name)
-			assert.Equal(t, "парапапапам", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(VarStatement).Name)
+			if assert.NoError(t, err) {
+				expr := a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement)
+				assert.Equal(t, OpEq, expr.Operation)
+				assert.Equal(t, "f", expr.Left.(VarStatement).Name)
+				assert.Equal(t, "парапапапам", expr.Right.(VarStatement).Name)
+			}
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -1752,15 +1757,15 @@ func TestPrint(t *testing.T) {
 }
 
 func TestExpPriority(t *testing.T) {
-	code := `Если 1 = 2 = 3 Тогда
+	code := `А = d = 2 = d ИЛИ в = 3;
+			Если 1 = 1 = 2 = 3 Тогда
 			   ПриКомпоновкеРезультата();
 			КонецЕсли`
-
 	a := NewAST(code)
 	err := a.Parse()
 	if assert.NoError(t, err) {
 		jdata, _ := a.JSON()
-		assert.Equal(t, `{"Name":"","Body":[{"Expression":{"Left":{"Left":1,"Right":2,"Operation":4},"Right":3,"Operation":4},"TrueBlock":[{"Name":"ПриКомпоновкеРезультата","Param":[null]}],"IfElseBlock":[],"ElseBlock":null}]}`, string(jdata))
+		assert.Equal(t, `{"Name":"","Body":[{"Left":{"Name":"А"},"Right":{"Left":{"Left":{"Left":{"Name":"d"},"Right":2,"Operation":5},"Right":{"Name":"d"},"Operation":5},"Right":{"Left":{"Name":"в"},"Right":3,"Operation":5},"Operation":12},"Operation":5},{"Expression":{"Left":{"Left":{"Left":1,"Right":1,"Operation":5},"Right":2,"Operation":5},"Right":3,"Operation":5},"TrueBlock":[{"Name":"ПриКомпоновкеРезультата","Param":[null]}],"IfElseBlock":[],"ElseBlock":null}]}`, string(jdata))
 	}
 }
 

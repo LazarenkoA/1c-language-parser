@@ -64,23 +64,20 @@ package ast
 }
 
 %token<token> Directive Identifier Procedure Var EndProcedure If Then ElseIf Else EndIf For Each In To Loop EndLoop Break Not ValueParam While GoToLabel
-%token<token> Continue Try Catch EndTry Number String New Function EndFunction Return Throw NeEq Le Ge Or And True False Undefind Export Date GoTo Execute
+%token<token> Continue Try Catch EndTry Number String New Function EndFunction Return Throw NeEQ EQUAL LE GE OR And True False Undefind Export Date GoTo Execute
 
 
-//%right '='
-%left Or
+%left OR
 %left And
-%left NeEq
-%left Le
-%left Ge
+%left NeEQ
+%left LE
+%left GE
 %left Not
 
-%left '='
+%left EQUAL
 %left Identifier
+//%nonassoc COMPARE
 
-//%nonassoc NeEq '>' '<'
-//%nonassoc NeEq
-//%nonassoc Not
 %left '>' '<'
 %left '+' '-'
 %left '*' '/' '%'
@@ -153,7 +150,13 @@ opt_body: { $$ = nil }
 ;
     
 
-body: stmt { $$ = []Statement{$1} }
+body: stmt {
+    if ast, ok := yylex.(*AstNode); ok {
+        $$ = []Statement{ast.statementPostProcessing($1)}
+    } else {
+        $$ = []Statement{$1}
+    }
+}
     | opt_body separator opt_stmt { 
         if $2.literal == ":" && len($1) > 0 {
             if _, ok := $1[len($1)-1].(*GoToLabelStatement); !ok {
@@ -168,7 +171,13 @@ body: stmt { $$ = []Statement{$1} }
 ;
 
 opt_stmt: { $$ = nil }
-        | stmt { $$ = $1 }
+        | stmt {
+            if ast, ok := yylex.(*AstNode); ok {
+                $$ = ast.statementPostProcessing($1)
+            } else {
+                $$ = $1
+            }
+         }
 ;
 
 separator: semicolon { $$ = $1} | colon { $$ = $1};
@@ -197,7 +206,7 @@ explicit_variables: Var identifiers semicolon {
 
 
 /* Если Конецесли */
-stmt_if : If expr Then opt_body opt_elseif_list opt_else EndIf {  
+stmt_if : If expr Then opt_body opt_elseif_list opt_else EndIf {
     $$ = &IfStatement {
         Expression: $2,
         TrueBlock:  $4,
@@ -208,7 +217,7 @@ stmt_if : If expr Then opt_body opt_elseif_list opt_else EndIf {
 
 /* ИначеЕсли */
 opt_elseif_list : { $$ = []Statement{} }
-        | ElseIf expr Then opt_body opt_elseif_list { 
+        | ElseIf expr Then opt_body opt_elseif_list {
              $$ = append($5, &IfStatement{
                 Expression: $2,
                 TrueBlock:  $4,
@@ -220,7 +229,7 @@ opt_else : { $$ = nil }
         | Else opt_body { $$ = $2 };
 
 /* тернарный оператор */
-ternary: '?' '(' expr comma expr comma expr ')' { 
+ternary: '?' '(' expr comma expr comma expr ')' {
     $$ = TernaryStatement{
             Expression: $3,
             TrueBlock: $5,
@@ -270,7 +279,7 @@ stmt : expr { $$ = $1 }
 ;
 
 opt_param: { $$ = nil } 
-            | expr { $$ = $1 }
+           | expr { $$ = $1 }
 ;
 
 
@@ -308,15 +317,23 @@ expr : simple_expr { $$ = $1 }
     | expr '%' expr { $$ = &ExpStatement{Operation: OpMod, Left: $1, Right: $3} }
     | expr '>' expr { $$ = &ExpStatement{Operation: OpGt, Left: $1, Right: $3} }
     | expr '<' expr { $$ = &ExpStatement{Operation: OpLt, Left: $1, Right: $3} }
-	| expr '=' expr { $$ = &ExpStatement{Operation: OpEq, Left: $1, Right: $3 } }
-    | expr Or expr {  $$ = &ExpStatement{Operation: OpOr, Left: $1, Right: $3 } } 
+    | expr EQUAL expr {$$ = &ExpStatement{Operation: OpEq, Left: $1, Right: $3 }}
+    | expr OR expr {  $$ = &ExpStatement{Operation: OpOr, Left: $1, Right: $3 } } 
     | expr And expr { $$ = &ExpStatement{Operation: OpAnd, Left: $1, Right: $3 } } 
-    | expr NeEq expr { $$ = &ExpStatement{Operation: OpNe, Left: $1, Right: $3 } }
-    | expr Le expr { $$ = &ExpStatement{Operation: OpLe, Left: $1, Right: $3 } }
-    | expr Ge expr { $$ = &ExpStatement{Operation: OpGe, Left: $1, Right: $3 } }
+    | expr NeEQ expr { $$ = &ExpStatement{Operation: OpNe, Left: $1, Right: $3 } }
+    | expr LE expr { $$ = &ExpStatement{Operation: OpLe, Left: $1, Right: $3 } }
+    | expr GE expr { $$ = &ExpStatement{Operation: OpGe, Left: $1, Right: $3 } }
     | Not expr { $$ = not($2) }
     | new_object { $$ = $1 } 
     | GoTo goToLabel { $$ = GoToStatement{ Label: $2 } }
+    | ternary { $$ =  $1  } /* тернарный оператор */
+    | through_dot {
+	    if tok, ok := $1.(Token); ok {
+		$$ = tok.literal
+	    } else {
+		$$ =  $1
+	    }
+	}
 ;
 
 opt_expr: { $$ = nil } | expr { $$ = $1 };
@@ -324,7 +341,7 @@ opt_expr: { $$ = nil } | expr { $$ = $1 };
 // опиасываются правила по которым можно объявлять параметры в функции или процедуре
 declarations_method_param: Identifier {  $$ = *(&ParamStatement{}).Fill(nil, $1) } // обычный параметр
             | ValueParam Identifier { $$ = *(&ParamStatement{}).Fill(&$1, $2) } // знач
-            | declarations_method_param '=' simple_expr { $$ = *($$.DefaultValue($3)) } // необязательный параметр 
+            | declarations_method_param EQUAL simple_expr { $$ = *($$.DefaultValue($3)) } // необязательный параметр
 ;
 
 declarations_method_params : { $$ = []ParamStatement{} }
@@ -351,14 +368,6 @@ simple_expr:  String { $$ = $1.value  }
             | Date { $$ =  $1.value  }
             | Undefind { $$ = UndefinedStatement{} }
             | goToLabel { $$ = $1}
-            | through_dot { 
-                if tok, ok := $1.(Token); ok {
-                    $$ = tok.literal
-                } else {
-                    $$ =  $1
-                }
-            }
-            | ternary { $$ =  $1  } // тернарный оператор
 ;
 
 goToLabel: GoToLabel { $$ = &GoToLabelStatement{ Name: $1.literal } }

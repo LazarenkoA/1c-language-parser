@@ -12,7 +12,8 @@ const (
 )
 
 const (
-	OpPlus OperationType = iota
+	OpUndefined OperationType = iota
+	OpPlus
 	OpMinus
 	OpMul
 	OpDiv
@@ -216,9 +217,9 @@ func (e CallChainStatement) IsMethod() bool {
 	return ok
 }
 
-func (e MethodStatement) Not() interface{} {
-	e.not = true
-	return e
+func (n MethodStatement) Not() interface{} {
+	n.not = true
+	return n
 }
 
 func (n NewObjectStatement) Params() []Statement {

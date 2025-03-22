@@ -64,7 +64,7 @@ func Test_Next(t *testing.T) {
 			token, err = tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "=", tok.literal)
-			assert.Equal(t, token, int('='))
+			assert.Equal(t, token, EQUAL)
 
 			token, err = tok.Next(ast)
 			assert.NoError(t, err)
@@ -84,7 +84,7 @@ func Test_Next(t *testing.T) {
 			token, err = tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "=", tok.literal)
-			assert.Equal(t, token, int('='))
+			assert.Equal(t, token, EQUAL)
 
 			token, err = tok.Next(ast)
 			assert.NoError(t, err)
@@ -105,7 +105,7 @@ func Test_Next(t *testing.T) {
 				token, err = tok.Next(ast)
 				assert.NoError(t, err)
 				assert.Equal(t, "=", tok.literal)
-				assert.Equal(t, token, int('='))
+				assert.Equal(t, token, EQUAL)
 
 				token, err = tok.Next(ast)
 				assert.NoError(t, err)
@@ -125,7 +125,7 @@ func Test_Next(t *testing.T) {
 				token, err = tok.Next(ast)
 				assert.NoError(t, err)
 				assert.Equal(t, "=", tok.literal)
-				assert.Equal(t, token, int('='))
+				assert.Equal(t, token, EQUAL)
 
 				token, err = tok.Next(ast)
 				assert.EqualError(t, err, "incorrect Date type constant")
@@ -146,7 +146,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "=", tok.literal)
-		assert.Equal(t, token, int('='))
+		assert.Equal(t, token, EQUAL)
 
 		token, err = tok.Next(ast)
 		assert.EqualError(t, err, "unexpected EOF")
@@ -165,7 +165,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "=", tok.literal)
-		assert.Equal(t, token, int('='))
+		assert.Equal(t, token, EQUAL)
 
 		token, err = tok.Next(ast)
 		assert.EqualError(t, err, "unexpected EOL")
@@ -186,7 +186,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "=", tok.literal)
-		assert.Equal(t, token, int('='))
+		assert.Equal(t, token, EQUAL)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
@@ -212,7 +212,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "=", tok.literal)
-		assert.Equal(t, token, int('='))
+		assert.Equal(t, token, EQUAL)
 
 		token, err = tok.Next(ast)
 		assert.EqualError(t, err, "unexpected EOF")
@@ -237,7 +237,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "<>", tok.literal)
-		assert.Equal(t, token, NeEq)
+		assert.Equal(t, token, NeEQ)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
@@ -257,7 +257,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "или", tok.literal)
-		assert.Equal(t, token, Or)
+		assert.Equal(t, token, OR)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
