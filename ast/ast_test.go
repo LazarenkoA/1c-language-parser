@@ -12,126 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// func TestParseIF(t *testing.T) {
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `если test = 1 Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.NoError(t, err)
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `если (test = 1) Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.NoError(t, err)
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `Если test2 = 1 И test1 = 1 ИЛИ Е = 4 Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.NoError(t, err)
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `Если test2 = 1 И test1 = 1 ИЛИ  Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.EqualError(t, err, "syntax error. line: 1, column: 32 (unexpected literal: \"Тогда\")")
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `Если тест() Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.NoError(t, err)
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `Если тест(1, в) Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.NoError(t, err)
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `Если тест(1,
-// 							в) Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.NoError(t, err)
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `Если тест(1 в) Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.EqualError(t, err, "syntax error. line: 1, column: 12 (unexpected literal: \"в\")")
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `Если (test2 = 1) И (test1 = 1 ИЛИ f = 2) Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.NoError(t, err)
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `если (test = 1 Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.EqualError(t, err, "syntax error. line: 1, column: 15 (unexpected literal: \"Тогда\")")
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `есл (test = 1 Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.EqualError(t, err, "syntax error. line: 1, column: 0 (unexpected literal: \"есл\")")
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `есл test = 1 Тогда КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.EqualError(t, err, "syntax error. line: 1, column: 0 (unexpected literal: \"есл\")")
-// 	})
-// 	t.Run("parse IF", func(t *testing.T) {
-// 		code := `если test = 1 Тогда Иначе КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.NoError(t, err)
-// 	})
-// 	t.Run("parse IFELSE", func(t *testing.T) {
-// 		code := `если test = 1 Тогда
-// 				ИначеЕсли test = 2 И кк = 9 Тогда
-// 				КонецЕсли;`
-//
-// 		a := NewAST(code)
-// 		err := a.Parse()
-// 		assert.NoError(t, err)
-// 	})
-// }
+func TestParse(t *testing.T) {
+	code := `Процедура dsds() d = 864/63+607-177*906*27>737*429+84-270 КонецПроцедуры`
 
-// type test111[T StatementCall | IfStatement] struct {
-// 	base T
-// }
-// tr := test111[IfStatement]{}
-// _ = tr.base.TrueBlock
+	a := NewAST(code)
+	err := a.Parse()
+	if assert.NoError(t, err) {
+		json, _ := a.JSON()
+		assert.Equal(t, string(json), `{"Name":"","Body":[{"ExplicitVariables":{},"Name":"dsds","Directive":"","Body":[{"Left":{"Name":"d"},"Right":{"Left":{"Left":{"Left":{"Left":864,"Right":63,"Operation":4},"Right":607,"Operation":1},"Right":{"Left":{"Left":177,"Right":906,"Operation":3},"Right":27,"Operation":3},"Operation":2},"Right":{"Left":{"Left":{"Left":737,"Right":429,"Operation":3},"Right":84,"Operation":1},"Right":270,"Operation":2},"Operation":6},"Operation":5}],"Params":[],"Type":1,"Export":false}]}`)
+	}
+}
 
 func TestParseModule(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {

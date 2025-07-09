@@ -4,6 +4,7 @@ import "fmt"
 
 type StatementType int
 type OperationType int
+type fCallBack func(root *FunctionOrProcedure, parentStm, stm *Statement)
 
 const (
 	PFTypeUndefined StatementType = iota
@@ -263,12 +264,12 @@ func (o OperationType) String() string {
 	}
 }
 
-func (m ModuleStatement) Walk(callBack func(current *FunctionOrProcedure, statement *Statement)) {
-	StatementWalk(m.Body, callBack)
+func (m *ModuleStatement) Walk(callBack fCallBack) {
+	StatementWalk(m.Body, m.Body, callBack)
 }
 
-func StatementWalk(stm []Statement, callBack func(current *FunctionOrProcedure, statement *Statement)) {
-	walkHelper(nil, stm, callBack)
+func StatementWalk(parentStm Statement, stm []Statement, callBack fCallBack) {
+	walkHelper(nil, parentStm, stm, callBack)
 }
 
 func (m *ModuleStatement) Append(item Statement, yylex yyLexer) {
@@ -313,37 +314,37 @@ func (m *ModuleStatement) Append(item Statement, yylex yyLexer) {
 // 	walkHelper(m, callBack)
 // }
 
-func walkHelper(parent *FunctionOrProcedure, statements []Statement, callBack func(current *FunctionOrProcedure, statement *Statement)) {
+func walkHelper(parent *FunctionOrProcedure, parentStm Statement, statements []Statement, callBack fCallBack) {
 	for i, item := range statements {
 		switch v := item.(type) {
 		case *IfStatement:
-			walkHelper(parent, []Statement{v.Expression}, callBack)
-			walkHelper(parent, v.TrueBlock, callBack)
-			walkHelper(parent, v.ElseBlock, callBack)
-			walkHelper(parent, v.IfElseBlock, callBack)
+			walkHelper(parent, v, []Statement{v.Expression}, callBack)
+			walkHelper(parent, v, v.TrueBlock, callBack)
+			walkHelper(parent, v, v.ElseBlock, callBack)
+			walkHelper(parent, v, v.IfElseBlock, callBack)
 		case TryStatement:
-			walkHelper(parent, v.Body, callBack)
-			walkHelper(parent, v.Catch, callBack)
+			walkHelper(parent, v, v.Body, callBack)
+			walkHelper(parent, v, v.Catch, callBack)
 		case *LoopStatement:
-			walkHelper(parent, v.Body, callBack)
+			walkHelper(parent, v, v.Body, callBack)
 		case *FunctionOrProcedure:
-			walkHelper(v, v.Body, callBack)
+			walkHelper(v, v, v.Body, callBack)
 			parent = v
 		case MethodStatement:
-			walkHelper(parent, v.Param, callBack)
+			walkHelper(parent, v, v.Param, callBack)
 		//case CallChainStatement:
 		//	walkHelper(parent, []Statement{v.Unit}, callBack)
 		case *ExpStatement:
-			walkHelper(parent, []Statement{v.Right}, callBack)
-			walkHelper(parent, []Statement{v.Left}, callBack)
+			walkHelper(parent, v, []Statement{v.Right}, callBack)
+			walkHelper(parent, v, []Statement{v.Left}, callBack)
 		case TernaryStatement:
-			walkHelper(parent, []Statement{v.Expression}, callBack)
-			walkHelper(parent, []Statement{v.TrueBlock}, callBack)
-			walkHelper(parent, []Statement{v.ElseBlock}, callBack)
+			walkHelper(parent, v, []Statement{v.Expression}, callBack)
+			walkHelper(parent, v, []Statement{v.TrueBlock}, callBack)
+			walkHelper(parent, v, []Statement{v.ElseBlock}, callBack)
 		case *ReturnStatement:
-			walkHelper(parent, []Statement{v.Param}, callBack)
+			walkHelper(parent, v, []Statement{v.Param}, callBack)
 		}
 
-		callBack(parent, &statements[i])
+		callBack(parent, &parentStm, &statements[i])
 	}
 }
