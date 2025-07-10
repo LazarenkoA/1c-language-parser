@@ -156,25 +156,26 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line .\grammar.y:388
+//line .\grammar.y:389
 
 //line yacctab:1
 var yyExca = [...]int8{
 	-1, 0,
-	4, 15,
-	5, 15,
-	-2, 7,
+	1, 1,
+	4, 16,
+	5, 16,
+	-2, 8,
 	-1, 1,
 	1, -1,
 	-2, 0,
 	-1, 2,
-	1, 1,
-	-2, 16,
+	1, 2,
+	-2, 17,
 	-1, 3,
-	8, 7,
-	9, 7,
-	34, 7,
-	-2, 15,
+	8, 8,
+	9, 8,
+	34, 8,
+	-2, 16,
 }
 
 const yyPrivate = 57344
@@ -277,33 +278,33 @@ var yyPgo = [...]int16{
 }
 
 var yyR1 = [...]int8{
-	0, 34, 34, 35, 35, 36, 36, 14, 14, 13,
-	13, 33, 37, 5, 5, 2, 2, 1, 1, 9,
-	9, 30, 30, 24, 24, 25, 25, 6, 7, 7,
-	8, 8, 23, 39, 4, 40, 4, 41, 4, 21,
-	21, 21, 3, 3, 3, 3, 3, 3, 3, 3,
-	10, 10, 20, 20, 28, 28, 28, 28, 28, 19,
-	19, 43, 27, 12, 12, 12, 12, 12, 12, 12,
+	0, 34, 34, 34, 35, 35, 36, 36, 14, 14,
+	13, 13, 33, 37, 5, 5, 2, 2, 1, 1,
+	9, 9, 30, 30, 24, 24, 25, 25, 6, 7,
+	7, 8, 8, 23, 39, 4, 40, 4, 41, 4,
+	21, 21, 21, 3, 3, 3, 3, 3, 3, 3,
+	3, 10, 10, 20, 20, 28, 28, 28, 28, 28,
+	19, 19, 43, 27, 12, 12, 12, 12, 12, 12,
 	12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
-	12, 12, 12, 18, 18, 17, 17, 17, 16, 16,
-	16, 22, 22, 22, 15, 15, 15, 15, 15, 15,
-	15, 15, 15, 29, 11, 11, 26, 26, 31, 32,
-	38, 42,
+	12, 12, 12, 12, 18, 18, 17, 17, 17, 16,
+	16, 16, 22, 22, 22, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 29, 11, 11, 26, 26, 31,
+	32, 38, 42,
 }
 
 var yyR2 = [...]int8{
-	0, 1, 2, 1, 2, 1, 1, 0, 1, 0,
-	1, 5, 0, 11, 10, 0, 1, 1, 3, 0,
-	1, 1, 1, 0, 1, 3, 4, 7, 0, 5,
-	0, 2, 8, 0, 9, 0, 8, 0, 6, 1,
-	1, 3, 1, 1, 1, 1, 1, 1, 2, 2,
-	0, 1, 1, 3, 1, 4, 4, 2, 4, 1,
-	1, 0, 6, 1, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 2, 1,
-	2, 1, 1, 0, 1, 1, 2, 3, 0, 1,
-	3, 2, 5, 4, 1, 1, 2, 2, 1, 1,
-	1, 1, 1, 1, 1, 3, 1, 3, 1, 1,
-	1, 1,
+	0, 0, 1, 2, 1, 2, 1, 1, 0, 1,
+	0, 1, 5, 0, 11, 10, 0, 1, 1, 3,
+	0, 1, 1, 1, 0, 1, 3, 4, 7, 0,
+	5, 0, 2, 8, 0, 9, 0, 8, 0, 6,
+	1, 1, 3, 1, 1, 1, 1, 1, 1, 2,
+	2, 0, 1, 1, 3, 1, 4, 4, 2, 4,
+	1, 1, 0, 6, 1, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 2,
+	1, 2, 1, 1, 0, 1, 1, 2, 3, 0,
+	1, 3, 2, 5, 4, 1, 1, 2, 2, 1,
+	1, 1, 1, 1, 1, 1, 3, 1, 3, 1,
+	1, 1, 1,
 }
 
 var yyChk = [...]int16{
@@ -331,27 +332,27 @@ var yyChk = [...]int16{
 }
 
 var yyDef = [...]int8{
-	-2, -2, -2, -2, 17, 0, 3, 42, 43, 44,
-	45, 46, 47, 50, 83, 5, 6, 63, 0, 0,
-	79, 0, 81, 82, 0, 0, 0, 15, 0, 94,
-	95, 0, 0, 98, 99, 100, 101, 102, 0, 0,
-	52, 8, 103, 54, 0, 2, 4, 16, 19, 21,
-	22, 108, 109, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 48, 51, 49, 84,
-	0, 78, 80, 0, 111, 0, 0, 0, 0, 0,
-	0, 0, 0, 96, 97, 91, 83, 0, 0, 83,
-	57, 0, 59, 60, 18, 20, 65, 66, 67, 68,
-	69, 70, 71, 72, 73, 74, 75, 76, 77, 64,
-	53, 15, 0, 0, 37, 61, 9, 106, 0, 0,
-	83, 0, 104, 0, 0, 0, 0, 28, 0, 0,
-	15, 15, 0, 0, 10, 110, 88, 88, 0, 93,
-	83, 0, 56, 55, 58, 30, 0, 0, 39, 40,
-	0, 35, 0, 0, 11, 107, 0, 89, 85, 0,
-	0, 92, 105, 0, 0, 15, 0, 33, 0, 15,
-	38, 62, 9, 0, 0, 86, 9, 0, 27, 31,
-	15, 15, 41, 0, 12, 90, 87, 23, 0, 28,
-	0, 36, 23, 15, 24, 0, 32, 29, 34, 15,
-	0, 0, 0, 0, 14, 0, 25, 13, 26,
+	-2, -2, -2, -2, 18, 0, 4, 43, 44, 45,
+	46, 47, 48, 51, 84, 6, 7, 64, 0, 0,
+	80, 0, 82, 83, 0, 0, 0, 16, 0, 95,
+	96, 0, 0, 99, 100, 101, 102, 103, 0, 0,
+	53, 9, 104, 55, 0, 3, 5, 17, 20, 22,
+	23, 109, 110, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 49, 52, 50, 85,
+	0, 79, 81, 0, 112, 0, 0, 0, 0, 0,
+	0, 0, 0, 97, 98, 92, 84, 0, 0, 84,
+	58, 0, 60, 61, 19, 21, 66, 67, 68, 69,
+	70, 71, 72, 73, 74, 75, 76, 77, 78, 65,
+	54, 16, 0, 0, 38, 62, 10, 107, 0, 0,
+	84, 0, 105, 0, 0, 0, 0, 29, 0, 0,
+	16, 16, 0, 0, 11, 111, 89, 89, 0, 94,
+	84, 0, 57, 56, 59, 31, 0, 0, 40, 41,
+	0, 36, 0, 0, 12, 108, 0, 90, 86, 0,
+	0, 93, 106, 0, 0, 16, 0, 34, 0, 16,
+	39, 63, 10, 0, 0, 87, 10, 0, 28, 32,
+	16, 16, 42, 0, 13, 91, 88, 24, 0, 29,
+	0, 37, 24, 16, 25, 0, 33, 30, 35, 16,
+	0, 0, 0, 0, 15, 0, 26, 14, 27,
 }
 
 var yyTok1 = [...]int8{
@@ -717,64 +718,69 @@ yydefault:
 	switch yynt {
 
 	case 1:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-0 : yypt+1]
 //line .\grammar.y:89
+		{
+		}
+	case 2:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:90
 		{
 			if ast, ok := yylex.(*AstNode); ok {
 				ast.ModuleStatement.Append(yyDollar[1].body, yylex)
 			}
 		}
-	case 2:
+	case 3:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line .\grammar.y:94
+//line .\grammar.y:95
 		{
 			if ast, ok := yylex.(*AstNode); ok {
 				ast.ModuleStatement.Append(yyDollar[2].opt_body, yylex)
 			}
 		}
-	case 5:
+	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:104
+//line .\grammar.y:105
 		{
 			if ast, ok := yylex.(*AstNode); ok {
 				ast.ModuleStatement.Append(yyDollar[1].global_variables, yylex)
 			}
 		}
-	case 6:
+	case 7:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:109
+//line .\grammar.y:110
 		{
 			if ast, ok := yylex.(*AstNode); ok {
 				ast.ModuleStatement.Append(yyDollar[1].funcProc, yylex)
 			}
 		}
-	case 7:
+	case 8:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:116
+//line .\grammar.y:117
 		{
 			yyVAL.opt_directive = nil
 		}
-	case 8:
+	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:117
+//line .\grammar.y:118
 		{
 			yyVAL.opt_directive = &yyDollar[1].token
 		}
-	case 9:
+	case 10:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:120
+//line .\grammar.y:121
 		{
 			yyVAL.opt_export = nil
 		}
-	case 10:
+	case 11:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:121
+//line .\grammar.y:122
 		{
 			yyVAL.opt_export = &yyDollar[1].token
 		}
-	case 11:
+	case 12:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line .\grammar.y:124
+//line .\grammar.y:125
 		{
 			yyVAL.global_variables = make([]GlobalVariables, len(yyDollar[3].identifiers), len(yyDollar[3].identifiers))
 			for i, v := range yyDollar[3].identifiers {
@@ -786,40 +792,40 @@ yydefault:
 				yyVAL.global_variables[i].Var = VarStatement{Name: v.literal}
 			}
 		}
-	case 12:
+	case 13:
 		yyDollar = yyS[yypt-7 : yypt+1]
-//line .\grammar.y:137
+//line .\grammar.y:138
 		{
 			isFunction(true, yylex)
 		}
-	case 13:
+	case 14:
 		yyDollar = yyS[yypt-11 : yypt+1]
-//line .\grammar.y:138
+//line .\grammar.y:139
 		{
 			yyVAL.funcProc = createFunctionOrProcedure(PFTypeFunction, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[9].opt_explicit_variables, yyDollar[10].opt_body)
 			isFunction(false, yylex)
 		}
-	case 14:
+	case 15:
 		yyDollar = yyS[yypt-10 : yypt+1]
-//line .\grammar.y:143
+//line .\grammar.y:144
 		{
 			yyVAL.funcProc = createFunctionOrProcedure(PFTypeProcedure, yyDollar[1].opt_directive, yyDollar[3].token.literal, yyDollar[5].declarations_method_params, yyDollar[7].opt_export, yyDollar[8].opt_explicit_variables, yyDollar[9].opt_body)
 		}
-	case 15:
+	case 16:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:148
+//line .\grammar.y:149
 		{
 			yyVAL.opt_body = nil
 		}
-	case 16:
+	case 17:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:149
+//line .\grammar.y:150
 		{
 			yyVAL.opt_body = yyDollar[1].body
 		}
-	case 17:
+	case 18:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:153
+//line .\grammar.y:154
 		{
 			if ast, ok := yylex.(*AstNode); ok {
 				yyVAL.body = []Statement{ast.statementPostProcessing(yyDollar[1].stmt)}
@@ -827,9 +833,9 @@ yydefault:
 				yyVAL.body = []Statement{yyDollar[1].stmt}
 			}
 		}
-	case 18:
+	case 19:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:160
+//line .\grammar.y:161
 		{
 			if yyDollar[2].token.literal == ":" && len(yyDollar[1].opt_body) > 0 {
 				if _, ok := yyDollar[1].opt_body[len(yyDollar[1].opt_body)-1].(*GoToLabelStatement); !ok {
@@ -840,15 +846,15 @@ yydefault:
 				yyVAL.body = append(yyVAL.body, yyDollar[3].stmt)
 			}
 		}
-	case 19:
+	case 20:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:173
+//line .\grammar.y:174
 		{
 			yyVAL.stmt = nil
 		}
-	case 20:
+	case 21:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:174
+//line .\grammar.y:175
 		{
 			if ast, ok := yylex.(*AstNode); ok {
 				yyVAL.stmt = ast.statementPostProcessing(yyDollar[1].stmt)
@@ -856,33 +862,33 @@ yydefault:
 				yyVAL.stmt = yyDollar[1].stmt
 			}
 		}
-	case 21:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:183
-		{
-			yyVAL.token = yyDollar[1].token
-		}
 	case 22:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:183
+//line .\grammar.y:184
 		{
 			yyVAL.token = yyDollar[1].token
 		}
 	case 23:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:184
+		{
+			yyVAL.token = yyDollar[1].token
+		}
+	case 24:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:187
+//line .\grammar.y:188
 		{
 			yyVAL.opt_explicit_variables = map[string]VarStatement{}
 		}
-	case 24:
+	case 25:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:188
+//line .\grammar.y:189
 		{
 			yyVAL.opt_explicit_variables = yyDollar[1].explicit_variables
 		}
-	case 25:
+	case 26:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:191
+//line .\grammar.y:192
 		{
 			if vars, err := appendVarStatements(map[string]VarStatement{}, yyDollar[2].identifiers); err != nil {
 				yylex.Error(err.Error())
@@ -890,9 +896,9 @@ yydefault:
 				yyVAL.explicit_variables = vars
 			}
 		}
-	case 26:
+	case 27:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line .\grammar.y:198
+//line .\grammar.y:199
 		{
 			if vars, err := appendVarStatements(yyDollar[1].explicit_variables, yyDollar[3].identifiers); err != nil {
 				yylex.Error(err.Error())
@@ -900,9 +906,9 @@ yydefault:
 				yyVAL.explicit_variables = vars
 			}
 		}
-	case 27:
+	case 28:
 		yyDollar = yyS[yypt-7 : yypt+1]
-//line .\grammar.y:209
+//line .\grammar.y:210
 		{
 			yyVAL.stmt_if = &IfStatement{
 				Expression:  yyDollar[2].stmt,
@@ -911,36 +917,36 @@ yydefault:
 				ElseBlock:   yyDollar[6].opt_else,
 			}
 		}
-	case 28:
+	case 29:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:219
+//line .\grammar.y:220
 		{
 			yyVAL.opt_elseif_list = []Statement{}
 		}
-	case 29:
+	case 30:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line .\grammar.y:220
+//line .\grammar.y:221
 		{
 			yyVAL.opt_elseif_list = append(yyDollar[5].opt_elseif_list, &IfStatement{
 				Expression: yyDollar[2].stmt,
 				TrueBlock:  yyDollar[4].opt_body,
 			})
 		}
-	case 30:
+	case 31:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:228
+//line .\grammar.y:229
 		{
 			yyVAL.opt_else = nil
 		}
-	case 31:
+	case 32:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line .\grammar.y:229
+//line .\grammar.y:230
 		{
 			yyVAL.opt_else = yyDollar[2].opt_body
 		}
-	case 32:
+	case 33:
 		yyDollar = yyS[yypt-8 : yypt+1]
-//line .\grammar.y:232
+//line .\grammar.y:233
 		{
 			yyVAL.stmt = TernaryStatement{
 				Expression: yyDollar[3].stmt,
@@ -948,15 +954,15 @@ yydefault:
 				ElseBlock:  yyDollar[7].stmt,
 			}
 		}
-	case 33:
+	case 34:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line .\grammar.y:241
+//line .\grammar.y:242
 		{
 			setLoopFlag(true, yylex)
 		}
-	case 34:
+	case 35:
 		yyDollar = yyS[yypt-9 : yypt+1]
-//line .\grammar.y:241
+//line .\grammar.y:242
 		{
 			yyVAL.stmt_loop = &LoopStatement{
 				For:  yyDollar[3].token.literal,
@@ -965,15 +971,15 @@ yydefault:
 			}
 			setLoopFlag(false, yylex)
 		}
-	case 35:
+	case 36:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line .\grammar.y:249
+//line .\grammar.y:250
 		{
 			setLoopFlag(true, yylex)
 		}
-	case 36:
+	case 37:
 		yyDollar = yyS[yypt-8 : yypt+1]
-//line .\grammar.y:249
+//line .\grammar.y:250
 		{
 			yyVAL.stmt_loop = &LoopStatement{
 				For:  yyDollar[2].stmt,
@@ -982,26 +988,20 @@ yydefault:
 			}
 			setLoopFlag(false, yylex)
 		}
-	case 37:
+	case 38:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:257
+//line .\grammar.y:258
 		{
 			setLoopFlag(true, yylex)
 		}
-	case 38:
+	case 39:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line .\grammar.y:257
+//line .\grammar.y:258
 		{
 			yyVAL.stmt_loop = &LoopStatement{
 				WhileExpr: yyDollar[2].stmt,
 				Body:      yyDollar[5].opt_body,
 			}
-		}
-	case 39:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:266
-		{
-			yyVAL.stmt = yyDollar[1].stmt
 		}
 	case 40:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1010,259 +1010,265 @@ yydefault:
 			yyVAL.stmt = yyDollar[1].stmt
 		}
 	case 41:
-		yyDollar = yyS[yypt-3 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:268
 		{
-			yyVAL.stmt = yyDollar[2].stmt
+			yyVAL.stmt = yyDollar[1].stmt
 		}
 	case 42:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:271
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line .\grammar.y:269
 		{
-			yyVAL.stmt = yyDollar[1].stmt
+			yyVAL.stmt = yyDollar[2].stmt
 		}
 	case 43:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:272
 		{
-			yyVAL.stmt = yyDollar[1].stmt_if
+			yyVAL.stmt = yyDollar[1].stmt
 		}
 	case 44:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:273
 		{
-			yyVAL.stmt = yyDollar[1].stmt_loop
+			yyVAL.stmt = yyDollar[1].stmt_if
 		}
 	case 45:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:274
 		{
-			yyVAL.stmt = yyDollar[1].stmt
+			yyVAL.stmt = yyDollar[1].stmt_loop
 		}
 	case 46:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:275
 		{
-			yyVAL.stmt = ContinueStatement{}
-			checkLoopOperator(yyDollar[1].token, yylex)
+			yyVAL.stmt = yyDollar[1].stmt
 		}
 	case 47:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:276
 		{
-			yyVAL.stmt = BreakStatement{}
+			yyVAL.stmt = ContinueStatement{}
 			checkLoopOperator(yyDollar[1].token, yylex)
 		}
 	case 48:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:277
 		{
-			yyVAL.stmt = ThrowStatement{Param: yyDollar[2].stmt}
-			checkThrowParam(yyDollar[1].token, yyDollar[2].stmt, yylex)
+			yyVAL.stmt = BreakStatement{}
+			checkLoopOperator(yyDollar[1].token, yylex)
 		}
 	case 49:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line .\grammar.y:278
 		{
+			yyVAL.stmt = ThrowStatement{Param: yyDollar[2].stmt}
+			checkThrowParam(yyDollar[1].token, yyDollar[2].stmt, yylex)
+		}
+	case 50:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line .\grammar.y:279
+		{
 			yyVAL.stmt = &ReturnStatement{Param: yyDollar[2].stmt}
 			checkReturnParam(yyDollar[2].stmt, yylex)
 		}
-	case 50:
+	case 51:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:281
+//line .\grammar.y:282
 		{
 			yyVAL.stmt = nil
 		}
-	case 51:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:282
-		{
-			yyVAL.stmt = yyDollar[1].stmt
-		}
 	case 52:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:287
+//line .\grammar.y:283
 		{
 			yyVAL.stmt = yyDollar[1].stmt
 		}
 	case 53:
-		yyDollar = yyS[yypt-3 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:288
+		{
+			yyVAL.stmt = yyDollar[1].stmt
+		}
+	case 54:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line .\grammar.y:289
 		{
 			yyVAL.stmt = CallChainStatement{Unit: yyDollar[3].stmt, Call: yyDollar[1].stmt}
 		}
-	case 54:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:294
-		{
-			yyVAL.stmt = VarStatement{Name: yyDollar[1].token.literal}
-		}
 	case 55:
-		yyDollar = yyS[yypt-4 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:295
 		{
-			yyVAL.stmt = MethodStatement{Name: yyDollar[1].token.literal, Param: yyDollar[3].exprs}
+			yyVAL.stmt = VarStatement{Name: yyDollar[1].token.literal}
 		}
 	case 56:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line .\grammar.y:296
 		{
-			yyVAL.stmt = ItemStatement{Object: yyDollar[1].stmt, Item: yyDollar[3].stmt}
+			yyVAL.stmt = MethodStatement{Name: yyDollar[1].token.literal, Param: yyDollar[3].exprs}
 		}
 	case 57:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-4 : yypt+1]
 //line .\grammar.y:297
+		{
+			yyVAL.stmt = ItemStatement{Object: yyDollar[1].stmt, Item: yyDollar[3].stmt}
+		}
+	case 58:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line .\grammar.y:298
 		{
 			yyVAL.stmt = MethodStatement{Name: yyDollar[1].token.literal, Param: []Statement{yyDollar[2].stmt}}
 		}
-	case 58:
+	case 59:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line .\grammar.y:298
+//line .\grammar.y:299
 		{
 			yyVAL.stmt = MethodStatement{Name: yyDollar[1].token.literal, Param: []Statement{yyDollar[3].stmt}}
-		}
-	case 59:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:301
-		{
-			yyVAL.stmt = yyDollar[1].token.value
 		}
 	case 60:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:302
 		{
-			yyVAL.stmt = VarStatement{Name: yyDollar[1].token.literal}
+			yyVAL.stmt = yyDollar[1].token.value
 		}
 	case 61:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:303
+		{
+			yyVAL.stmt = VarStatement{Name: yyDollar[1].token.literal}
+		}
+	case 62:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:305
+//line .\grammar.y:306
 		{
 			setTryFlag(true, yylex)
 		}
-	case 62:
+	case 63:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line .\grammar.y:305
+//line .\grammar.y:306
 		{
 			yyVAL.stmt = TryStatement{Body: yyDollar[2].opt_body, Catch: yyDollar[5].opt_body}
 			setTryFlag(false, yylex)
 		}
-	case 63:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:311
-		{
-			yyVAL.stmt = yyDollar[1].stmt
-		}
 	case 64:
-		yyDollar = yyS[yypt-3 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:312
 		{
-			yyVAL.stmt = yyDollar[2].stmt
+			yyVAL.stmt = yyDollar[1].stmt
 		}
 	case 65:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:313
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpPlus, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = yyDollar[2].stmt
 		}
 	case 66:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:314
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpMinus, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpPlus, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 67:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:315
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpMul, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpMinus, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 68:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:316
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpDiv, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpMul, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 69:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:317
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpMod, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpDiv, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 70:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:318
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpGt, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpMod, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 71:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:319
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpLt, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpGt, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 72:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:320
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpEq, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpLt, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 73:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:321
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpOr, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpEq, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 74:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:322
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpAnd, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpOr, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 75:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:323
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpNe, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpAnd, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 76:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:324
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpLe, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpNe, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 77:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:325
 		{
-			yyVAL.stmt = &ExpStatement{Operation: OpGe, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+			yyVAL.stmt = &ExpStatement{Operation: OpLe, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
 		}
 	case 78:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 //line .\grammar.y:326
+		{
+			yyVAL.stmt = &ExpStatement{Operation: OpGe, Left: yyDollar[1].stmt, Right: yyDollar[3].stmt}
+		}
+	case 79:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line .\grammar.y:327
 		{
 			yyVAL.stmt = not(yyDollar[2].stmt)
 		}
-	case 79:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:327
-		{
-			yyVAL.stmt = yyDollar[1].stmt
-		}
 	case 80:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:328
 		{
-			yyVAL.stmt = GoToStatement{Label: yyDollar[2].goToLabel}
+			yyVAL.stmt = yyDollar[1].stmt
 		}
 	case 81:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-2 : yypt+1]
 //line .\grammar.y:329
 		{
-			yyVAL.stmt = yyDollar[1].stmt
+			yyVAL.stmt = GoToStatement{Label: yyDollar[2].goToLabel}
 		}
 	case 82:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:330
+		{
+			yyVAL.stmt = yyDollar[1].stmt
+		}
+	case 83:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:331
 		{
 			if tok, ok := yyDollar[1].stmt.(Token); ok {
 				yyVAL.stmt = tok.literal
@@ -1270,77 +1276,71 @@ yydefault:
 				yyVAL.stmt = yyDollar[1].stmt
 			}
 		}
-	case 83:
+	case 84:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:339
+//line .\grammar.y:340
 		{
 			yyVAL.stmt = nil
 		}
-	case 84:
+	case 85:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:339
+//line .\grammar.y:340
 		{
 			yyVAL.stmt = yyDollar[1].stmt
 		}
-	case 85:
+	case 86:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:342
+//line .\grammar.y:343
 		{
 			yyVAL.declarations_method_param = *(&ParamStatement{}).Fill(nil, yyDollar[1].token)
 		}
-	case 86:
+	case 87:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line .\grammar.y:343
+//line .\grammar.y:344
 		{
 			yyVAL.declarations_method_param = *(&ParamStatement{}).Fill(&yyDollar[1].token, yyDollar[2].token)
 		}
-	case 87:
+	case 88:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:344
+//line .\grammar.y:345
 		{
 			yyVAL.declarations_method_param = *(yyVAL.declarations_method_param.DefaultValue(yyDollar[3].stmt))
 		}
-	case 88:
+	case 89:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line .\grammar.y:347
+//line .\grammar.y:348
 		{
 			yyVAL.declarations_method_params = []ParamStatement{}
 		}
-	case 89:
+	case 90:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:348
+//line .\grammar.y:349
 		{
 			yyVAL.declarations_method_params = []ParamStatement{yyDollar[1].declarations_method_param}
 		}
-	case 90:
+	case 91:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:349
+//line .\grammar.y:350
 		{
 			yyVAL.declarations_method_params = append(yyDollar[1].declarations_method_params, yyDollar[3].declarations_method_param)
 		}
-	case 91:
+	case 92:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line .\grammar.y:357
+//line .\grammar.y:358
 		{
 			yyVAL.stmt = NewObjectStatement{Constructor: yyDollar[2].token.literal}
 		}
-	case 92:
+	case 93:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line .\grammar.y:358
+//line .\grammar.y:359
 		{
 			yyVAL.stmt = NewObjectStatement{Constructor: yyDollar[2].token.literal, Param: yyDollar[4].exprs}
 		}
-	case 93:
+	case 94:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line .\grammar.y:359
+//line .\grammar.y:360
 		{
 			yyVAL.stmt = NewObjectStatement{Param: yyDollar[3].exprs}
-		}
-	case 94:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:362
-		{
-			yyVAL.stmt = yyDollar[1].token.value
 		}
 	case 95:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1349,22 +1349,22 @@ yydefault:
 			yyVAL.stmt = yyDollar[1].token.value
 		}
 	case 96:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:364
 		{
-			yyVAL.stmt = unaryMinus(yyDollar[2].stmt)
+			yyVAL.stmt = yyDollar[1].token.value
 		}
 	case 97:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line .\grammar.y:365
 		{
-			yyVAL.stmt = yyDollar[2].stmt
+			yyVAL.stmt = unaryMinus(yyDollar[2].stmt)
 		}
 	case 98:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-2 : yypt+1]
 //line .\grammar.y:366
 		{
-			yyVAL.stmt = yyDollar[1].token.value
+			yyVAL.stmt = yyDollar[2].stmt
 		}
 	case 99:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1382,53 +1382,59 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:369
 		{
-			yyVAL.stmt = UndefinedStatement{}
+			yyVAL.stmt = yyDollar[1].token.value
 		}
 	case 102:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:370
 		{
-			yyVAL.stmt = yyDollar[1].goToLabel
+			yyVAL.stmt = UndefinedStatement{}
 		}
 	case 103:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:373
+//line .\grammar.y:371
 		{
-			yyVAL.goToLabel = &GoToLabelStatement{Name: yyDollar[1].token.literal}
+			yyVAL.stmt = yyDollar[1].goToLabel
 		}
 	case 104:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:375
+//line .\grammar.y:374
+		{
+			yyVAL.goToLabel = &GoToLabelStatement{Name: yyDollar[1].token.literal}
+		}
+	case 105:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:376
 		{
 			yyVAL.exprs = []Statement{yyDollar[1].stmt}
 		}
-	case 105:
+	case 106:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:376
+//line .\grammar.y:377
 		{
 			yyVAL.exprs = append(yyVAL.exprs, yyDollar[3].stmt)
 		}
-	case 106:
+	case 107:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:379
+//line .\grammar.y:380
 		{
 			yyVAL.identifiers = []Token{yyDollar[1].token}
 		}
-	case 107:
+	case 108:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line .\grammar.y:380
+//line .\grammar.y:381
 		{
 			yyVAL.identifiers = append(yyVAL.identifiers, yyDollar[3].token)
-		}
-	case 108:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line .\grammar.y:383
-		{
-			yyVAL.token = yyDollar[1].token
 		}
 	case 109:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line .\grammar.y:384
+		{
+			yyVAL.token = yyDollar[1].token
+		}
+	case 110:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line .\grammar.y:385
 		{
 			yyVAL.token = yyDollar[1].token
 		}

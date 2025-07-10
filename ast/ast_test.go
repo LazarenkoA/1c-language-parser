@@ -23,6 +23,55 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestParse2(t *testing.T) {
+	code := `
+		// @strict-types
+		
+		
+		#Если Сервер Или ТолстыйКлиентОбычноеПриложение Или ВнешнееСоединение Тогда
+		
+		#Область ОписаниеПеременных
+		
+		#КонецОбласти
+		
+		#Область ПрограммныйИнтерфейс
+		
+		// Код процедур и функций
+		
+		#КонецОбласти
+		
+		#Область ОбработчикиСобытий
+		
+		// Код процедур и функций
+		
+		#КонецОбласти
+		
+		#Область СлужебныйПрограммныйИнтерфейс
+		
+		// Код процедур и функций
+		
+		#КонецОбласти
+		
+		#Область СлужебныеПроцедурыИФункции
+		
+		// Код процедур и функций
+		
+		#КонецОбласти
+		
+		#Область Инициализация
+		
+		#КонецОбласти
+		
+		#КонецЕсли
+		
+		`
+
+	a := NewAST(code)
+	err := a.Parse()
+	assert.NoError(t, err)
+	assert.Nil(t, a.ModuleStatement.Body)
+}
+
 func TestParseModule(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		code := ``
@@ -1035,7 +1084,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.EqualError(t, err, "syntax error. line: 1, column: 0 (unexpected literal: \"&\")")
+			assert.EqualError(t, err, "syntax error. line: 1, column: 1 (unexpected literal: \"НасервереБез\")")
 		})
 		t.Run("without directive", func(t *testing.T) {
 			code := `Функция ПодключитьВнешнююОбработку(Ссылка, вы, выыыыы) 
@@ -1136,7 +1185,7 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.EqualError(t, err, "syntax error. line: 1, column: 0 (unexpected literal: \"&\")")
+			assert.EqualError(t, err, "syntax error. line: 1, column: 1 (unexpected literal: \"НасервереБез\")")
 		})
 		t.Run("export", func(t *testing.T) {
 			code := `Процедура ПодключитьВнешнююОбработку(Ссылка) Экспорт

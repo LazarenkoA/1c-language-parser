@@ -57,6 +57,7 @@ func (ast *AstNode) Lex(lval *yySymType) int {
 	token, err := lval.token.Next(ast)
 	if err != nil {
 		ast.err = errors.Wrap(err, "get token error")
+		return EOF
 	}
 	if token == EOF {
 		return EOF

@@ -86,7 +86,8 @@ package ast
 
 %%
 
-module: body {
+module: /* empty */ {  }
+    |body {
          if ast, ok := yylex.(*AstNode); ok {
             ast.ModuleStatement.Append($1, yylex)
         }
