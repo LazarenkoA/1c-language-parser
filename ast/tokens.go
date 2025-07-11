@@ -137,7 +137,7 @@ func (t *Token) next() (int, string, error) {
 		if tName, ok := tokens[lowLit]; ok && !t.prevDot {
 			return tName, literal, nil
 		} else {
-			return Identifier, literal, nil
+			return token_identifier, literal, nil
 		}
 	case let == '.':
 		// если после точки у нас следует идентификатор то нам нужно читать его обычным идентификатором

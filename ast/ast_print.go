@@ -13,7 +13,7 @@ type PrintConf struct {
 	OneLine bool
 
 	// автоматически расставить скобки в выражениях
-	// LispStyle bool
+	LispStyle bool
 }
 
 type astPrint struct {
@@ -166,7 +166,7 @@ func (p *astPrint) printVarStatement(v Statement) string {
 		return "Неопределено"
 	case MethodStatement:
 		not := IF[string](val.not, "Не ", "")
-		return not + val.Name + "(" + p.printParams(val.Param) + ")"
+		return not + val.Name + "(" + p.printParams(val.Param.Statements) + ")"
 	case VarStatement:
 		return val.Name
 	case ItemStatement:
@@ -174,13 +174,15 @@ func (p *astPrint) printVarStatement(v Statement) string {
 	case TernaryStatement:
 		return fmt.Sprintf("?(%s, %s, %s)", p.printExpression(val.Expression), p.printExpression(val.TrueBlock), p.printExpression(val.ElseBlock))
 	case NewObjectStatement:
-		return fmt.Sprintf("Новый %s(%s)", val.Constructor, p.printParams(val.Param))
+		return fmt.Sprintf("Новый %s(%s)", val.Constructor, p.printParams(val.Param.Statements))
+	case AssignmentStatement:
+		return fmt.Sprintf("%s = %s", val.Var.Name, p.printExpression(val.Expr))
 	default:
 		return ""
 	}
 }
 
-func (p *astPrint) printParams(Params []Statement) string {
+func (p *astPrint) printParams(Params Statements) string {
 	params := make([]string, len(Params), len(Params))
 	for i, parm := range Params {
 		params[i] = p.printExpression(parm)
@@ -189,7 +191,7 @@ func (p *astPrint) printParams(Params []Statement) string {
 	return strings.Join(params, ", ")
 }
 
-func (p *astPrint) printBody(items []Statement, depth int) string {
+func (p *astPrint) printBody(items Statements, depth int) string {
 	builder := &strings.Builder{}
 
 	for _, item := range items {
@@ -321,7 +323,24 @@ func (p *astPrint) printExpression(expr Statement) string {
 	builder := &strings.Builder{}
 
 	switch v := expr.(type) {
+	case ExprStatements:
+		if v.not {
+			builder.WriteString("Не ")
+			builder.WriteString("(")
+		}
+
+		for _, s := range v.Statements {
+			builder.WriteString(p.printExpression(s))
+		}
+
+		if v.not {
+			builder.WriteString(")")
+		}
 	case *ExpStatement:
+		if p.conf.LispStyle {
+			builder.WriteString("(")
+		}
+
 		if v.not {
 			builder.WriteString("Не ")
 		}
@@ -340,6 +359,10 @@ func (p *astPrint) printExpression(expr Statement) string {
 		builder.WriteString(p.printExpression(v.Right))
 
 		if v.unaryMinus || v.not {
+			builder.WriteString(")")
+		}
+
+		if p.conf.LispStyle {
 			builder.WriteString(")")
 		}
 	case VarStatement:

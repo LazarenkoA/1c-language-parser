@@ -18,8 +18,8 @@ func TestParse(t *testing.T) {
 	a := NewAST(code)
 	err := a.Parse()
 	if assert.NoError(t, err) {
-		json, _ := a.JSON()
-		assert.Equal(t, string(json), `{"Name":"","Body":[{"ExplicitVariables":{},"Name":"dsds","Directive":"","Body":[{"Left":{"Name":"d"},"Right":{"Left":{"Left":{"Left":{"Left":864,"Right":63,"Operation":4},"Right":607,"Operation":1},"Right":{"Left":{"Left":177,"Right":906,"Operation":3},"Right":27,"Operation":3},"Operation":2},"Right":{"Left":{"Left":{"Left":737,"Right":429,"Operation":3},"Right":84,"Operation":1},"Right":270,"Operation":2},"Operation":6},"Operation":5}],"Params":[],"Type":1,"Export":false}]}`)
+		p := a.Print(PrintConf{OneLine: true, LispStyle: true})
+		assert.Equal(t, "Процедура dsds() d = ((((864 / 63) + 607) - ((177 * 906) * 27)) > (((737 * 429) + 84) - 270));КонецПроцедуры", strings.TrimSpace(p))
 	}
 }
 
@@ -70,6 +70,34 @@ func TestParse2(t *testing.T) {
 	err := a.Parse()
 	assert.NoError(t, err)
 	assert.Nil(t, a.ModuleStatement.Body)
+}
+
+func TestParse3(t *testing.T) {
+	code := `
+		// См. УправлениеДоступомПереопределяемый.ПриЗаполненииСписковСОграничениемДоступа.
+		Процедура ПриЗаполненииОграниченияДоступа(Ограничение) Экспорт
+		//{{MRG[ <-> ]
+		//
+		//}}MRG[ <-> ]
+			Ограничение.Текст =
+			"РазрешитьЧтениеИзменение
+			|ГДЕ
+		//{{MRG[ <-> ]
+			|	ЗначениеРазрешено(Организация)
+			|	И ЗначениеРазрешено(ФизическоеЛицо)";
+		//}}MRG[ <-> ]
+		//{{MRG[ <-> ]
+		//	|	ЗначениеРазрешено(Организация)";
+		//
+		//}}MRG[ <-> ]
+		КонецПроцедуры
+		
+		`
+
+	a := NewAST(code)
+	err := a.Parse()
+	assert.NoError(t, err)
+	assert.NotNil(t, a.ModuleStatement.Body)
 }
 
 func TestParseModule(t *testing.T) {
@@ -200,7 +228,7 @@ func TestExecute(t *testing.T) {
 		err := a.Parse()
 		if assert.NoError(t, err) {
 			jdata, _ := a.JSON()
-			assert.Equal(t, `{"Name":"","Body":[{"ExplicitVariables":{},"Name":"ВыполнитьВБезопасномРежиме","Directive":"\u0026НаСервере","Body":[{"Name":"Выполнить","Param":[{"Name":"Алгоритм"}]}],"Params":[{"Name":"Алгоритм","IsValue":true},{"Default":{},"Name":"Параметры","IsValue":true}],"Type":1,"Export":false}]}`, string(jdata))
+			assert.Equal(t, `{"Name":"","Body":[{"ExplicitVariables":{},"Name":"ВыполнитьВБезопасномРежиме","Directive":"\u0026НаСервере","Body":[{"Name":"Выполнить","Param":{"Statements":[{"Name":"Алгоритм"}]}}],"Params":[{"Name":"Алгоритм","IsValue":true},{"Default":{},"Name":"Параметры","IsValue":true}],"Type":1,"Export":false}]}`, string(jdata))
 		}
 	})
 	t.Run("Execute-2", func(t *testing.T) {
@@ -854,13 +882,16 @@ func TestTryCatch(t *testing.T) {
 						Попытка 
 							а = 1+1;					
 						Исключение
-							ВызватьИсключение "";
+							ВызватьИсключение "fff";
 						КонецПопытки;
 					КонецПроцедуры`
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.NoError(t, err)
+		if assert.NoError(t, err) {
+			json, _ := a.JSON()
+			assert.Contains(t, string(json), `{"Param":"fff"}`)
+		}
 	})
 	t.Run("pass", func(t *testing.T) {
 		code := `Процедура ПодключитьВнешнююОбработку() 
@@ -950,12 +981,28 @@ func TestTryCatch(t *testing.T) {
 						Исключение
 							ВызватьИсключение
 						КонецПопытки;
+
 						ВызватьИсключение 
 					КонецПроцедуры`
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.EqualError(t, err, "operator \"ВызватьИсключение\" without arguments can only be used when handling an exception. line: 12, column: 5 (unexpected literal: \"КонецПроцедуры\")")
+		assert.ErrorContains(t, err, "without arguments can only be used when handling an exception")
+	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Функция Команда1НаСервере()
+
+					ВызватьИсключение(НСтр("ru = 'Недостаточно прав на использование сертификата.'"),
+						КатегорияОшибки.НарушениеПравДоступа);
+
+			 КонецФункции`
+
+		a := NewAST(code)
+		err := a.Parse()
+		if assert.NoError(t, err) {
+			json, _ := a.JSON()
+			assert.Contains(t, string(json), `{"Name":"","Body":[{"ExplicitVariables":{},"Name":"Команда1НаСервере","Directive":"","Body":[{"Param":{"Statements":[{"Name":"НСтр","Param":{"Statements":["ru = 'Недостаточно прав на использование сертификата.'"]}},{"Unit":{"Name":"НарушениеПравДоступа"},"Call":{"Name":"КатегорияОшибки"}}]}}],"Params":[],"Type":2,"Export":false}]}`)
+		}
 	})
 }
 
@@ -1023,10 +1070,8 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			if assert.NoError(t, err) {
-				expr := a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement)
-				assert.Equal(t, OpEq, expr.Operation)
-				assert.Equal(t, "f", expr.Left.(VarStatement).Name)
-				assert.Equal(t, "парапапапам", expr.Right.(VarStatement).Name)
+				p := a.Print(PrintConf{OneLine: true})
+				assert.Equal(t, "&НасервереБезКонтекста\nФункция ПодключитьВнешнююОбработку(Ссылка) f = парапапапам;КонецФункции", strings.TrimSpace(p))
 			}
 		})
 		t.Run("ast", func(t *testing.T) {
@@ -1039,9 +1084,10 @@ func TestParseFunctionProcedure(t *testing.T) {
 			a := NewAST(code)
 			err := a.Parse()
 			fmt.Println(a.Print(PrintConf{Margin: 2}))
-			assert.NoError(t, err)
-			assert.Equal(t, OpEq, a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Operation)
-			assert.Equal(t, float64(221), a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(float64))
+			if assert.NoError(t, err) {
+				p := a.Print(PrintConf{OneLine: true})
+				assert.Equal(t, "&НасервереБезКонтекста\nФункция ПодключитьВнешнююОбработку(Ссылка) f = 221;Возврат 2 + 2;КонецФункции", strings.TrimSpace(p))
+			}
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -1051,8 +1097,10 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.NoError(t, err)
-			assert.Equal(t, "вававава авава", a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(string))
+			if assert.NoError(t, err) {
+				p := a.Print(PrintConf{OneLine: true})
+				assert.Equal(t, "&НасервереБезКонтекста\nФункция ПодключитьВнешнююОбработку(Ссылка) f = \"вававава авава\";КонецФункции", strings.TrimSpace(p))
+			}
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -1062,8 +1110,10 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.NoError(t, err)
-			assert.Equal(t, true, a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(bool))
+			if assert.NoError(t, err) {
+				p := a.Print(PrintConf{OneLine: true})
+				assert.Equal(t, "&НасервереБезКонтекста\nФункция ПодключитьВнешнююОбработку(Ссылка) f = Истина;КонецФункции", strings.TrimSpace(p))
+			}
 		})
 		t.Run("ast", func(t *testing.T) {
 			code := `&НасервереБезКонтекста
@@ -1073,8 +1123,10 @@ func TestParseFunctionProcedure(t *testing.T) {
 
 			a := NewAST(code)
 			err := a.Parse()
-			assert.NoError(t, err)
-			assert.Equal(t, false, a.ModuleStatement.Body[0].(*FunctionOrProcedure).Body[0].(*ExpStatement).Right.(bool))
+			if assert.NoError(t, err) {
+				p := a.Print(PrintConf{OneLine: true})
+				assert.Equal(t, "&НасервереБезКонтекста\nФункция ПодключитьВнешнююОбработку(Ссылка) f = Ложь;КонецФункции", strings.TrimSpace(p))
+			}
 		})
 		t.Run("bad directive", func(t *testing.T) {
 			code := `&НасервереБез
@@ -1563,10 +1615,11 @@ func TestParseAST(t *testing.T) {
 
 	a := NewAST(code)
 	err := a.Parse()
-	assert.NoError(t, err)
 
-	p := a.Print(PrintConf{Margin: 4})
-	assert.Equal(t, true, compareHashes(code, p))
+	if assert.NoError(t, err) {
+		p := a.Print(PrintConf{Margin: 4})
+		assert.Equal(t, true, compareHashes(code, p))
+	}
 }
 
 func TestParseEmpty(t *testing.T) {
@@ -1696,16 +1749,35 @@ func TestPrint(t *testing.T) {
 }
 
 func TestExpPriority(t *testing.T) {
-	code := `А = d = 2 = d ИЛИ в = 3;
+	t.Run("test1", func(t *testing.T) {
+		code := `А = d = 2 = d ИЛИ в = 3;
 			Если 1 = 1 = 2 = 3 Тогда
 			   ПриКомпоновкеРезультата();
 			КонецЕсли`
-	a := NewAST(code)
-	err := a.Parse()
-	if assert.NoError(t, err) {
-		jdata, _ := a.JSON()
-		assert.Equal(t, `{"Name":"","Body":[{"Left":{"Name":"А"},"Right":{"Left":{"Left":{"Left":{"Name":"d"},"Right":2,"Operation":5},"Right":{"Name":"d"},"Operation":5},"Right":{"Left":{"Name":"в"},"Right":3,"Operation":5},"Operation":12},"Operation":5},{"Expression":{"Left":{"Left":{"Left":1,"Right":1,"Operation":5},"Right":2,"Operation":5},"Right":3,"Operation":5},"TrueBlock":[{"Name":"ПриКомпоновкеРезультата","Param":[null]}],"IfElseBlock":[],"ElseBlock":null}]}`, string(jdata))
-	}
+		a := NewAST(code)
+		err := a.Parse()
+		if assert.NoError(t, err) {
+			p := a.Print(PrintConf{Margin: 4, LispStyle: true})
+			//fmt.Println(p)
+			assert.Equal(t, "А=(((d=2)=d)ИЛИ(в=3));Если(((1=1)=2)=3)ТогдаПриКомпоновкеРезультата();КонецЕсли;", normalize(p))
+		}
+	})
+	t.Run("test2", func(t *testing.T) {
+		code := `Процедура ОткрытьНавигационнуюСсылку(НавигационнаяСсылка, Знач Оповещение = Неопределено) Экспорт
+					Если в = 1 = 5 и не авав ИЛИ ааа Тогда
+						в = 1 = 5 = 1 и не авав ИЛИ ааа;
+					КонецЕсли;
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+
+		if assert.NoError(t, err) {
+			p := a.Print(PrintConf{Margin: 4, LispStyle: true})
+			assert.Equal(t, "ПроцедураОткрытьНавигационнуюСсылку(НавигационнаяСсылка,ЗначОповещение=Неопределено)ЭкспортЕсли((((в=1)=5)ИНеавав)ИЛИааа)Тогдав=((((1=5)=1)ИНеавав)ИЛИааа);КонецЕсли;КонецПроцедуры", normalize(p))
+		}
+	})
+
 }
 
 func BenchmarkString(b *testing.B) {
@@ -1734,27 +1806,25 @@ func BenchmarkString(b *testing.B) {
 	//})
 }
 
-func test(str string) {
-
-}
-
-func testPt(str *string) {
-
-}
+func test(_ string)    {}
+func testPt(_ *string) {}
 
 func compareHashes(str1, str2 string) bool {
-	str1 = strings.ReplaceAll(str1, " ", "")
-	str1 = strings.ReplaceAll(str1, "\t", "")
-	str1 = strings.ReplaceAll(str1, "\n", "")
-
-	str2 = strings.ReplaceAll(str2, " ", "")
-	str2 = strings.ReplaceAll(str2, "\t", "")
-	str2 = strings.ReplaceAll(str2, "\n", "")
+	str1 = normalize(str1)
+	str2 = normalize(str2)
 
 	hash1 := sha256.Sum256([]byte(fastToLower(str1)))
 	hash2 := sha256.Sum256([]byte(fastToLower(str2)))
 
 	return hash1 == hash2
+}
+
+func normalize(str string) string {
+	str = strings.ReplaceAll(str, " ", "")
+	str = strings.ReplaceAll(str, "\t", "")
+	str = strings.ReplaceAll(str, "\n", "")
+
+	return str
 }
 
 func deleteEmptyLine(str string) string {

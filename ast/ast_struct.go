@@ -38,10 +38,21 @@ type INot interface {
 }
 
 type IParams interface {
-	Params() []Statement
+	Params() Statements
 }
 
 type Statement interface{}
+type Statements []Statement
+
+type AssignmentStatement struct {
+	Var  VarStatement
+	Expr ExprStatements
+}
+
+type ExprStatements struct {
+	Statements
+	addStatementField
+}
 
 type GlobalVariables struct {
 	Directive string
@@ -52,7 +63,7 @@ type GlobalVariables struct {
 type ModuleStatement struct {
 	Name            string
 	GlobalVariables map[string]GlobalVariables `json:"GlobalVariables,omitempty"`
-	Body            []Statement
+	Body            Statements
 }
 
 type VarStatement struct {
@@ -64,7 +75,7 @@ type FunctionOrProcedure struct {
 	ExplicitVariables map[string]VarStatement
 	Name              string
 	Directive         string
-	Body              []Statement
+	Body              Statements
 	Params            []ParamStatement
 	Type              StatementType
 	Export            bool
@@ -91,19 +102,19 @@ type ExpStatement struct {
 
 // type IfElseStatement struct {
 // 	Expression Statement
-// 	TrueBlock  []Statement
+// 	TrueBlock  Statements
 // }
 
 type IfStatement struct {
 	Expression  Statement
-	TrueBlock   []Statement
-	IfElseBlock []Statement
-	ElseBlock   []Statement
+	TrueBlock   Statements
+	IfElseBlock Statements
+	ElseBlock   Statements
 }
 
 type TryStatement struct {
-	Body  []Statement
-	Catch []Statement
+	Body  Statements
+	Catch Statements
 }
 
 type ThrowStatement struct {
@@ -118,7 +129,7 @@ type ReturnStatement struct {
 
 type NewObjectStatement struct {
 	Constructor string
-	Param       []Statement
+	Param       ExprStatements
 }
 
 type CallChainStatement struct {
@@ -129,7 +140,7 @@ type CallChainStatement struct {
 
 type MethodStatement struct {
 	Name  string
-	Param []Statement
+	Param ExprStatements
 	addStatementField
 }
 
@@ -144,7 +155,7 @@ type LoopStatement struct {
 	To        Statement `json:"To,omitempty"`
 	In        Statement `json:"In,omitempty"`
 	WhileExpr Statement `json:"WhileExpr,omitempty"`
-	Body      []Statement
+	Body      Statements
 }
 
 type TernaryStatement struct {
@@ -187,7 +198,7 @@ func (e *ExpStatement) UnaryMinus() interface{} {
 	return e
 }
 
-func (e *ExpStatement) Not() interface{} {
+func (e ExprStatements) Not() interface{} {
 	e.not = true
 	return e
 }
@@ -223,11 +234,11 @@ func (n MethodStatement) Not() interface{} {
 	return n
 }
 
-func (n NewObjectStatement) Params() []Statement {
+func (n NewObjectStatement) Params() ExprStatements {
 	return n.Param
 }
 
-func (n MethodStatement) Params() []Statement {
+func (n MethodStatement) Params() ExprStatements {
 	return n.Param
 }
 
@@ -268,7 +279,7 @@ func (m *ModuleStatement) Walk(callBack fCallBack) {
 	StatementWalk(m.Body, m.Body, callBack)
 }
 
-func StatementWalk(parentStm Statement, stm []Statement, callBack fCallBack) {
+func StatementWalk(parentStm Statement, stm Statements, callBack fCallBack) {
 	walkHelper(nil, parentStm, stm, callBack)
 }
 
@@ -293,7 +304,7 @@ func (m *ModuleStatement) Append(item Statement, yylex yyLexer) {
 		for _, item := range v {
 			m.Append(item, yylex)
 		}
-	case []Statement:
+	case Statements:
 		m.Body = append(m.Body, v...)
 	case *FunctionOrProcedure:
 		// если предыдущее выражение не процедура функция, то это значит что какой-то умник вначале или в середине модуля вставил какие-то выражения, а это нельзя. 1С разрешает выражения только в конце модуля
@@ -314,11 +325,11 @@ func (m *ModuleStatement) Append(item Statement, yylex yyLexer) {
 // 	walkHelper(m, callBack)
 // }
 
-func walkHelper(parent *FunctionOrProcedure, parentStm Statement, statements []Statement, callBack fCallBack) {
+func walkHelper(parent *FunctionOrProcedure, parentStm Statement, statements Statements, callBack fCallBack) {
 	for i, item := range statements {
 		switch v := item.(type) {
 		case *IfStatement:
-			walkHelper(parent, v, []Statement{v.Expression}, callBack)
+			walkHelper(parent, v, Statements{v.Expression}, callBack)
 			walkHelper(parent, v, v.TrueBlock, callBack)
 			walkHelper(parent, v, v.ElseBlock, callBack)
 			walkHelper(parent, v, v.IfElseBlock, callBack)
@@ -331,18 +342,18 @@ func walkHelper(parent *FunctionOrProcedure, parentStm Statement, statements []S
 			walkHelper(v, v, v.Body, callBack)
 			parent = v
 		case MethodStatement:
-			walkHelper(parent, v, v.Param, callBack)
+			walkHelper(parent, v, v.Param.Statements, callBack)
 		//case CallChainStatement:
-		//	walkHelper(parent, []Statement{v.Unit}, callBack)
+		//	walkHelper(parent, Statements{v.Unit}, callBack)
 		case *ExpStatement:
-			walkHelper(parent, v, []Statement{v.Right}, callBack)
-			walkHelper(parent, v, []Statement{v.Left}, callBack)
+			walkHelper(parent, v, Statements{v.Right}, callBack)
+			walkHelper(parent, v, Statements{v.Left}, callBack)
 		case TernaryStatement:
-			walkHelper(parent, v, []Statement{v.Expression}, callBack)
-			walkHelper(parent, v, []Statement{v.TrueBlock}, callBack)
-			walkHelper(parent, v, []Statement{v.ElseBlock}, callBack)
+			walkHelper(parent, v, Statements{v.Expression}, callBack)
+			walkHelper(parent, v, Statements{v.TrueBlock}, callBack)
+			walkHelper(parent, v, Statements{v.ElseBlock}, callBack)
 		case *ReturnStatement:
-			walkHelper(parent, v, []Statement{v.Param}, callBack)
+			walkHelper(parent, v, Statements{v.Param}, callBack)
 		}
 
 		callBack(parent, &parentStm, &statements[i])

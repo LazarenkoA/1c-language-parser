@@ -17,6 +17,15 @@ func Test_Next(t *testing.T) {
 	c := gomock.NewController(t)
 	defer c.Finish()
 
+	t.Run("var", func(t *testing.T) {
+		//ast := mock_ast.NewMockIast(c)
+		//ast.EXPECT().SrsCode().Return(`в = не( 1 = 1 /3) И к = 4 и не авав;`).AnyTimes()
+
+		//tok := new(Token)
+		//for token, err := tok.Next(ast); err == nil; token, err = tok.Next(ast) {
+		//	fmt.Println(token)
+		//}
+	})
 	t.Run("var & Identifier", func(t *testing.T) {
 		ast := mock_ast.NewMockIast(c)
 		ast.EXPECT().SrsCode().Return(` Перем     ввв; ввв = 3;`).AnyTimes()
@@ -29,7 +38,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "ввв", tok.literal)
-		assert.Equal(t, token, Identifier)
+		assert.Equal(t, token, token_identifier)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -59,7 +68,7 @@ func Test_Next(t *testing.T) {
 			token, err := tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "тестПерем", tok.literal)
-			assert.Equal(t, token, Identifier)
+			assert.Equal(t, token, token_identifier)
 
 			token, err = tok.Next(ast)
 			assert.NoError(t, err)
@@ -79,7 +88,7 @@ func Test_Next(t *testing.T) {
 			token, err := tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "тестПерем", tok.literal)
-			assert.Equal(t, token, Identifier)
+			assert.Equal(t, token, token_identifier)
 
 			token, err = tok.Next(ast)
 			assert.NoError(t, err)
@@ -100,7 +109,7 @@ func Test_Next(t *testing.T) {
 				token, err := tok.Next(ast)
 				assert.NoError(t, err)
 				assert.Equal(t, "тестПерем", tok.literal)
-				assert.Equal(t, token, Identifier)
+				assert.Equal(t, token, token_identifier)
 
 				token, err = tok.Next(ast)
 				assert.NoError(t, err)
@@ -120,7 +129,7 @@ func Test_Next(t *testing.T) {
 				token, err := tok.Next(ast)
 				assert.NoError(t, err)
 				assert.Equal(t, "тестПерем", tok.literal)
-				assert.Equal(t, token, Identifier)
+				assert.Equal(t, token, token_identifier)
 
 				token, err = tok.Next(ast)
 				assert.NoError(t, err)
@@ -141,7 +150,7 @@ func Test_Next(t *testing.T) {
 		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "тестПерем", tok.literal)
-		assert.Equal(t, token, Identifier)
+		assert.Equal(t, token, token_identifier)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
@@ -160,7 +169,7 @@ func Test_Next(t *testing.T) {
 		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "тестПерем", tok.literal)
-		assert.Equal(t, token, Identifier)
+		assert.Equal(t, token, token_identifier)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
@@ -181,7 +190,7 @@ func Test_Next(t *testing.T) {
 		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "тестПерем", tok.literal)
-		assert.Equal(t, token, Identifier)
+		assert.Equal(t, token, token_identifier)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
@@ -207,7 +216,7 @@ func Test_Next(t *testing.T) {
 		token, err := tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "тестПерем", tok.literal)
-		assert.Equal(t, token, Identifier)
+		assert.Equal(t, token, token_identifier)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
@@ -232,7 +241,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "РЗ", tok.literal)
-		assert.Equal(t, token, Identifier)
+		assert.Equal(t, token, token_identifier)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
@@ -252,7 +261,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "ппп", tok.literal)
-		assert.Equal(t, token, Identifier)
+		assert.Equal(t, token, token_identifier)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
@@ -262,7 +271,7 @@ func Test_Next(t *testing.T) {
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
 		assert.Equal(t, "ррр", tok.literal)
-		assert.Equal(t, token, Identifier)
+		assert.Equal(t, token, token_identifier)
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
@@ -313,7 +322,7 @@ func Test_Next(t *testing.T) {
 		result := map[string]int{
 			"&НаСервере":               Directive,
 			"Процедура":                Procedure,
-			"ДобавитьРегистрНаСервере": Identifier,
+			"ДобавитьРегистрНаСервере": token_identifier,
 			"КонецПроцедуры":           EndProcedure,
 			"(":                        '(',
 			")":                        ')',
@@ -336,7 +345,7 @@ func Test_Next(t *testing.T) {
 
 		result := map[string]int{
 			"Процедура": Procedure,
-			"ДобавитьРегистрНаСервере": Identifier,
+			"ДобавитьРегистрНаСервере": token_identifier,
 			"КонецПроцедуры":           EndProcedure,
 			"(":                        '(',
 			")":                        ')',
@@ -361,7 +370,7 @@ func Test_Next(t *testing.T) {
 			token, err := tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "test", tok.literal)
-			assert.Equal(t, token, Identifier)
+			assert.Equal(t, token, token_identifier)
 
 			token, err = tok.Next(ast)
 			assert.NoError(t, err)
@@ -381,7 +390,7 @@ func Test_Next(t *testing.T) {
 			token, err := tok.Next(ast)
 			assert.NoError(t, err)
 			assert.Equal(t, "test", tok.literal)
-			assert.Equal(t, token, Identifier)
+			assert.Equal(t, token, token_identifier)
 
 			token, err = tok.Next(ast)
 			assert.NoError(t, err)

@@ -11,7 +11,6 @@ package ast
 %type<opt_elseif_list> opt_elseif_list
 %type<opt_else> opt_else
 %type<stmt> opt_stmt
-%type<stmt> opt_param
 %type<exprs> exprs 
 %type<stmt> expr
 %type<opt_export> opt_export
@@ -36,23 +35,23 @@ package ast
 %type<token> colon
 %type<token> ':'
 %type<token> ';'
+%type<token> ','
 %type<global_variables> global_variables
-
-
+%type<token> comma
 
 %union {
     token Token
     stmt_if *IfStatement
-    opt_elseif_list []Statement
-    opt_else []Statement
+    opt_elseif_list Statements
+    opt_else Statements
     stmt    Statement
     stmt_loop *LoopStatement
     funcProc *FunctionOrProcedure
-    body []Statement
-    opt_body []Statement
+    body Statements
+    opt_body Statements
     declarations_method_params []ParamStatement
     declarations_method_param ParamStatement
-    exprs []Statement
+    exprs ExprStatements
     opt_export *Token
     opt_directive *Token
     explicit_variables map[string]VarStatement
@@ -63,28 +62,25 @@ package ast
     opt_goToLabel *GoToLabelStatement
 }
 
-%token<token> Directive Identifier Procedure Var EndProcedure If Then ElseIf Else EndIf For Each In To Loop EndLoop Break Not ValueParam While GoToLabel
+%token<token> Directive token_identifier Procedure Var EndProcedure If Then ElseIf Else EndIf For Each In To Loop EndLoop Break Not ValueParam While GoToLabel
 %token<token> Continue Try Catch EndTry Number String New Function EndFunction Return Throw NeEQ EQUAL LE GE OR And True False Undefind Export Date GoTo Execute
 
-
+%nonassoc LOW_PREC /* самый низкий приоритет */
 %left OR
 %left And
 %left NeEQ
 %left LE
 %left GE
-%left Not
-
+%right Not
 %left EQUAL
-%left Identifier
-//%nonassoc COMPARE
-
 %left '>' '<'
 %left '+' '-'
 %left '*' '/' '%'
-%right UNARMinus UNARYPlus
+%right UNARMinus UNARYPlus /* самый высокий приоритет */
 
 
 %%
+
 
 module: /* empty */ {  }
     |body {
@@ -135,12 +131,12 @@ global_variables: opt_directive Var identifiers opt_export semicolon {
 };
 
 
-funcProc: opt_directive Function Identifier '(' declarations_method_params ')' opt_export { isFunction(true, yylex) } opt_explicit_variables opt_body EndFunction
+funcProc: opt_directive Function token_identifier '(' declarations_method_params ')' opt_export { isFunction(true, yylex) } opt_explicit_variables opt_body EndFunction
         {  
             $$ = createFunctionOrProcedure(PFTypeFunction, $1, $3.literal, $5, $7, $9, $10)
             isFunction(false, yylex) 
         }
-        | opt_directive Procedure Identifier '(' declarations_method_params ')' opt_export opt_explicit_variables opt_body EndProcedure
+        | opt_directive Procedure token_identifier '(' declarations_method_params ')' opt_export opt_explicit_variables opt_body EndProcedure
         { 
             $$ = createFunctionOrProcedure(PFTypeProcedure, $1, $3.literal, $5, $7, $8, $9)
         }
@@ -151,13 +147,7 @@ opt_body: { $$ = nil }
 ;
     
 
-body: stmt {
-    if ast, ok := yylex.(*AstNode); ok {
-        $$ = []Statement{ast.statementPostProcessing($1)}
-    } else {
-        $$ = []Statement{$1}
-    }
-}
+body: stmt { $$ = Statements{$1}}
     | opt_body separator opt_stmt { 
         if $2.literal == ":" && len($1) > 0 {
             if _, ok := $1[len($1)-1].(*GoToLabelStatement); !ok {
@@ -172,13 +162,7 @@ body: stmt {
 ;
 
 opt_stmt: { $$ = nil }
-        | stmt {
-            if ast, ok := yylex.(*AstNode); ok {
-                $$ = ast.statementPostProcessing($1)
-            } else {
-                $$ = $1
-            }
-         }
+        | stmt { $$ = $1 }
 ;
 
 separator: semicolon { $$ = $1} | colon { $$ = $1};
@@ -217,7 +201,7 @@ stmt_if : If expr Then opt_body opt_elseif_list opt_else EndIf {
 };
 
 /* ИначеЕсли */
-opt_elseif_list : { $$ = []Statement{} }
+opt_elseif_list : { $$ = Statements{} }
         | ElseIf expr Then opt_body opt_elseif_list {
              $$ = append($5, &IfStatement{
                 Expression: $2,
@@ -239,7 +223,7 @@ ternary: '?' '(' expr comma expr comma expr ')' {
 };
 
 /* циклы */
-stmt_loop: For Each Identifier In loopExp Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
+stmt_loop: For Each token_identifier In loopExp Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
         $$ = &LoopStatement{
             For: $3.literal,
             In: $5,
@@ -269,18 +253,16 @@ loopExp: through_dot { $$ = $1 }
         |'(' new_object ')' { $$ = $2 }
 ;
 
-stmt : expr { $$ = $1 }
+
+stmt : token_identifier EQUAL expr { $$ = AssignmentStatement{ Var: VarStatement{ Name: $1.literal }, Expr: ExprStatements{ Statements: Statements{$3}} } }
+    | expr %prec LOW_PREC { $$ = $1 }
     | stmt_if { $$ = $1 }
     | stmt_loop {$$ = $1 }
     | stmt_tryCatch { $$ = $1 }
     | Continue { $$ = ContinueStatement{}; checkLoopOperator($1, yylex) }
     | Break { $$ = BreakStatement{}; checkLoopOperator($1, yylex) }
-    | Throw opt_param { $$ = ThrowStatement{ Param: $2 }; checkThrowParam($1, $2, yylex) }
+    | Throw opt_expr { $$ = ThrowStatement{ Param: $2 }; checkThrowParam($1, $2, yylex) }
     | Return opt_expr { $$ = &ReturnStatement{ Param: $2 }; checkReturnParam($2, yylex) }
-;
-
-opt_param: { $$ = nil } 
-           | expr { $$ = $1 }
 ;
 
 
@@ -292,15 +274,15 @@ through_dot: identifier { $$ = $1 }
 /* вызовы процедур, функций */
 /* вызовы выполнить */
 /* выполнить может вызываться так выполнить("что-то") или так выполнить "что-то" */
-identifier: Identifier { $$ = VarStatement{ Name: $1.literal } }
-        | Identifier '(' exprs ')' { $$ = MethodStatement{ Name: $1.literal, Param: $3 } }
+identifier: token_identifier { $$ = VarStatement{ Name: $1.literal } }
+        | token_identifier '(' exprs ')' { $$ = MethodStatement{ Name: $1.literal, Param: $3 } }
         | identifier '[' expr ']' { $$ = ItemStatement{ Object: $1, Item: $3 } }
-        | Execute execute_param { $$ = MethodStatement{ Name: $1.literal, Param: []Statement{$2} } }
-        | Execute '(' expr ')' { $$ = MethodStatement{ Name: $1.literal, Param:  []Statement{$3} } }
+        | Execute execute_param { $$ = MethodStatement{ Name: $1.literal, Param:   ExprStatements{ Statements: Statements{$2}} } }
+        | Execute '(' expr ')' { $$ = MethodStatement{ Name: $1.literal, Param:   ExprStatements{ Statements: Statements{$3}} } }
 ;
 
 execute_param: String { $$ = $1.value  }
-             | Identifier { $$ = VarStatement{ Name: $1.literal }};
+             | token_identifier { $$ = VarStatement{ Name: $1.literal }};
 
 /* попытка */
 stmt_tryCatch: Try opt_body Catch { setTryFlag(true, yylex) } opt_body EndTry { 
@@ -308,9 +290,9 @@ stmt_tryCatch: Try opt_body Catch { setTryFlag(true, yylex) } opt_body EndTry {
     setTryFlag(false, yylex)
 };
 
-/* выражения */
+/* все что может учавствовать в выражениях */
 expr : simple_expr { $$ = $1 }
-    |'(' expr ')' { $$ = $2 }
+    | '(' exprs ')' { $$ = $2 }
     | expr '+' expr { $$ = &ExpStatement{Operation: OpPlus, Left: $1, Right: $3} }
     | expr '-' expr { $$ = &ExpStatement{Operation: OpMinus, Left: $1, Right: $3} }
     | expr '*' expr { $$ = &ExpStatement{Operation: OpMul, Left: $1, Right: $3} }
@@ -319,13 +301,13 @@ expr : simple_expr { $$ = $1 }
     | expr '>' expr { $$ = &ExpStatement{Operation: OpGt, Left: $1, Right: $3} }
     | expr '<' expr { $$ = &ExpStatement{Operation: OpLt, Left: $1, Right: $3} }
     | expr EQUAL expr {$$ = &ExpStatement{Operation: OpEq, Left: $1, Right: $3 }}
-    | expr OR expr {  $$ = &ExpStatement{Operation: OpOr, Left: $1, Right: $3 } } 
-    | expr And expr { $$ = &ExpStatement{Operation: OpAnd, Left: $1, Right: $3 } } 
+    | expr OR expr {  $$ = &ExpStatement{Operation: OpOr, Left: $1, Right: $3 } }
+    | expr And expr { $$ = &ExpStatement{Operation: OpAnd, Left: $1, Right: $3 } }
     | expr NeEQ expr { $$ = &ExpStatement{Operation: OpNe, Left: $1, Right: $3 } }
     | expr LE expr { $$ = &ExpStatement{Operation: OpLe, Left: $1, Right: $3 } }
     | expr GE expr { $$ = &ExpStatement{Operation: OpGe, Left: $1, Right: $3 } }
     | Not expr { $$ = not($2) }
-    | new_object { $$ = $1 } 
+    | new_object { $$ = $1 }
     | GoTo goToLabel { $$ = GoToStatement{ Label: $2 } }
     | ternary { $$ =  $1  } /* тернарный оператор */
     | through_dot {
@@ -339,9 +321,24 @@ expr : simple_expr { $$ = $1 }
 
 opt_expr: { $$ = nil } | expr { $$ = $1 };
 
+exprs : opt_expr {$$ = ExprStatements{ Statements: Statements{$1}} }
+	| exprs comma opt_expr { $$.Statements = append($$.Statements, $3) }
+;
+
+simple_expr: String { $$ = $1.value  }
+            | Number { $$ =  $1.value }
+            | '-' expr %prec UNARMinus { $$ = unaryMinus($2) }
+            | '+' expr %prec UNARYPlus { $$ = $2 }
+            | True { $$ =  $1.value  }
+            | False { $$ =  $1.value  }
+            | Date { $$ =  $1.value  }
+            | Undefind { $$ = UndefinedStatement{} }
+            | goToLabel { $$ = $1}
+;
+
 // опиасываются правила по которым можно объявлять параметры в функции или процедуре
-declarations_method_param: Identifier {  $$ = *(&ParamStatement{}).Fill(nil, $1) } // обычный параметр
-            | ValueParam Identifier { $$ = *(&ParamStatement{}).Fill(&$1, $2) } // знач
+declarations_method_param: token_identifier {  $$ = *(&ParamStatement{}).Fill(nil, $1) } // обычный параметр
+            | ValueParam token_identifier { $$ = *(&ParamStatement{}).Fill(&$1, $2) } // знач
             | declarations_method_param EQUAL simple_expr { $$ = *($$.DefaultValue($3)) } // необязательный параметр
 ;
 
@@ -355,35 +352,22 @@ declarations_method_params : { $$ = []ParamStatement{} }
 // новый Структура(), новый Массив() ...
 // но так же и такие
 // Новый("РегистрСведенийКлючЗаписи.СостоянияОригиналовПервичныхДокументов", ПараметрыМассив);
-new_object:  New Identifier { $$ = NewObjectStatement{ Constructor: $2.literal } }
-            | New Identifier '(' exprs ')' { $$ = NewObjectStatement{ Constructor: $2.literal, Param: $4 } }
+new_object:  New token_identifier { $$ = NewObjectStatement{ Constructor: $2.literal } }
+            | New token_identifier '(' exprs ')' { $$ = NewObjectStatement{ Constructor: $2.literal, Param: $4 } }
             | New '(' exprs ')' { $$ = NewObjectStatement{ Param: $3 } }
 ;
 
-simple_expr:  String { $$ = $1.value  }
-            | Number { $$ =  $1.value }
-            | '-' expr %prec UNARMinus { $$ = unaryMinus($2) }
-            | '+' expr %prec UNARYPlus { $$ = $2 }
-            | True { $$ =  $1.value  }
-            | False { $$ =  $1.value  }
-            | Date { $$ =  $1.value  }
-            | Undefind { $$ = UndefinedStatement{} }
-            | goToLabel { $$ = $1}
-;
+
 
 goToLabel: GoToLabel { $$ = &GoToLabelStatement{ Name: $1.literal } }
 
-exprs : opt_expr {$$ = []Statement{$1} }
-	| exprs comma opt_expr { $$ = append($$, $3);  }
-;    
-
-identifiers: Identifier { $$ = []Token{$1} }
-        | identifiers comma Identifier {$$ = append($$, $3) }
+identifiers: token_identifier %prec LOW_PREC  { $$ = []Token{$1} }
+        | identifiers comma token_identifier %prec LOW_PREC {$$ = append($$, $3) }
 ;
 
 semicolon: ';' {$$ = $1};
 colon: ':'{$$ = $1};
-comma: ',';
+comma: ',' {$$ = $1};
 dot: '.';
 
 %%
