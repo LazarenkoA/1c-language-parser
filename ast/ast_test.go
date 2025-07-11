@@ -1777,7 +1777,20 @@ func TestExpPriority(t *testing.T) {
 			assert.Equal(t, "ПроцедураОткрытьНавигационнуюСсылку(НавигационнаяСсылка,ЗначОповещение=Неопределено)ЭкспортЕсли((((в=1)=5)ИНеавав)ИЛИааа)Тогдав=((((1=5)=1)ИНеавав)ИЛИааа);КонецЕсли;КонецПроцедуры", normalize(p))
 		}
 	})
+	t.Run("test3", func(t *testing.T) {
+		code := `Процедура f()
+					тест.куку.ууу = 1 = 5 = 1 и не авав ИЛИ ааа;
+					тест[333] = 1 = 5 = 1 = 4 = fd;
+				КонецПроцедуры`
 
+		a := NewAST(code)
+		err := a.Parse()
+
+		if assert.NoError(t, err) {
+			p := a.Print(PrintConf{OneLine: true, LispStyle: true})
+			assert.Equal(t, "Процедура f() тест.куку.ууу = ((((1 = 5) = 1) И Не авав) ИЛИ ааа);тест[333] = ((((1 = 5) = 1) = 4) = fd);КонецПроцедуры", strings.TrimSpace(p))
+		}
+	})
 }
 
 func BenchmarkString(b *testing.B) {

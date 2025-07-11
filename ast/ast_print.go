@@ -176,7 +176,7 @@ func (p *astPrint) printVarStatement(v Statement) string {
 	case NewObjectStatement:
 		return fmt.Sprintf("Новый %s(%s)", val.Constructor, p.printParams(val.Param.Statements))
 	case AssignmentStatement:
-		return fmt.Sprintf("%s = %s", val.Var.Name, p.printExpression(val.Expr))
+		return fmt.Sprintf("%s = %s", p.printVarStatement(val.Var), p.printExpression(val.Expr))
 	default:
 		return ""
 	}

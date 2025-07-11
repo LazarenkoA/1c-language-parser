@@ -45,7 +45,7 @@ type Statement interface{}
 type Statements []Statement
 
 type AssignmentStatement struct {
-	Var  VarStatement
+	Var  Statement
 	Expr ExprStatements
 }
 

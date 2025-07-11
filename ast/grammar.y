@@ -254,7 +254,13 @@ loopExp: through_dot { $$ = $1 }
 ;
 
 
-stmt : token_identifier EQUAL expr { $$ = AssignmentStatement{ Var: VarStatement{ Name: $1.literal }, Expr: ExprStatements{ Statements: Statements{$3}} } }
+stmt : through_dot EQUAL expr {
+            v := $1
+       	    if tok, ok := $1.(Token); ok {
+       		    v = VarStatement{ Name: tok.literal }
+       	    }
+       	    $$ = AssignmentStatement{ Var: v, Expr: ExprStatements{ Statements: Statements{$3}} }
+       	}
     | expr %prec LOW_PREC { $$ = $1 }
     | stmt_if { $$ = $1 }
     | stmt_loop {$$ = $1 }
@@ -312,9 +318,9 @@ expr : simple_expr { $$ = $1 }
     | ternary { $$ =  $1  } /* тернарный оператор */
     | through_dot {
 	    if tok, ok := $1.(Token); ok {
-		$$ = tok.literal
+		    $$ = tok.literal
 	    } else {
-		$$ =  $1
+		    $$ =  $1
 	    }
 	}
 ;
