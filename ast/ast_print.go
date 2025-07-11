@@ -177,6 +177,8 @@ func (p *astPrint) printVarStatement(v Statement) string {
 		return fmt.Sprintf("Новый %s(%s)", val.Constructor, p.printParams(val.Param.Statements))
 	case AssignmentStatement:
 		return fmt.Sprintf("%s = %s", p.printVarStatement(val.Var), p.printExpression(val.Expr))
+	case ExpStatement, ExprStatements, *ExpStatement, *ExprStatements:
+		return p.printExpression(val)
 	default:
 		return ""
 	}
@@ -185,7 +187,7 @@ func (p *astPrint) printVarStatement(v Statement) string {
 func (p *astPrint) printParams(Params Statements) string {
 	params := make([]string, len(Params), len(Params))
 	for i, parm := range Params {
-		params[i] = p.printExpression(parm)
+		params[i] = p.printVarStatement(parm)
 	}
 
 	return strings.Join(params, ", ")
@@ -236,8 +238,11 @@ func (p *astPrint) printBodyItem(item Statement, depth int) string {
 	case ThrowStatement:
 		builder.WriteString("ВызватьИсключение")
 		if v.Param != nil {
-			builder.WriteString(" ")
-			builder.WriteString(p.printExpression(v.Param))
+			if param, ok := v.Param.(ExprStatements); ok {
+				builder.WriteString("(" + p.printParams(param.Statements) + ")")
+			} else {
+				builder.WriteString("(" + p.printParams(Statements{v.Param}) + ")")
+			}
 		}
 		builder.WriteString(";")
 	case *ReturnStatement:

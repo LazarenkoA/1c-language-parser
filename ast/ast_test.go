@@ -1000,8 +1000,8 @@ func TestTryCatch(t *testing.T) {
 		a := NewAST(code)
 		err := a.Parse()
 		if assert.NoError(t, err) {
-			json, _ := a.JSON()
-			assert.Contains(t, string(json), `{"Name":"","Body":[{"ExplicitVariables":{},"Name":"Команда1НаСервере","Directive":"","Body":[{"Param":{"Statements":[{"Name":"НСтр","Param":{"Statements":["ru = 'Недостаточно прав на использование сертификата.'"]}},{"Unit":{"Name":"НарушениеПравДоступа"},"Call":{"Name":"КатегорияОшибки"}}]}}],"Params":[],"Type":2,"Export":false}]}`)
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, "Функция Команда1НаСервере() ВызватьИсключение(НСтр(\"ru = 'Недостаточно прав на использование сертификата.'\"), КатегорияОшибки.НарушениеПравДоступа);КонецФункции", strings.TrimSpace(p))
 		}
 	})
 }
@@ -1733,9 +1733,9 @@ func TestPrint(t *testing.T) {
 
 						Попытка 
 							а = 1+1;
-ВызватьИсключение ававава();
+ВызватьИсключение(ававава());
 						Исключение
-							ВызватьИсключение "";
+							ВызватьИсключение("");
 ВызватьИсключение ;
 						КонецПопытки;
 					Конецпроцедуры`
@@ -1743,9 +1743,6 @@ func TestPrint(t *testing.T) {
 	a := NewAST(code)
 	err := a.Parse()
 	assert.NoError(t, err)
-
-	// p := a.Print(&PrintConf{Margin: 4})
-	// fmt.Println(p)
 }
 
 func TestExpPriority(t *testing.T) {
