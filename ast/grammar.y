@@ -239,7 +239,7 @@ stmt_loop: For Each token_identifier In loopExp Loop { setLoopFlag(true, yylex) 
         }
         setLoopFlag(false, yylex)
     }
-    |While expr Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
+    | While expr Loop { setLoopFlag(true, yylex) } opt_body EndLoop {
         $$ = &LoopStatement{
             WhileExpr: $2,
             Body: $5,
@@ -251,6 +251,7 @@ stmt_loop: For Each token_identifier In loopExp Loop { setLoopFlag(true, yylex) 
 loopExp: through_dot { $$ = $1 }
         | new_object { $$ = $1 }
         |'(' new_object ')' { $$ = $2 }
+        | ternary { $$ = $1 }
 ;
 
 

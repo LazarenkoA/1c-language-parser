@@ -908,6 +908,20 @@ func TestParseLoop(t *testing.T) {
 		err := a.Parse()
 		assert.EqualError(t, err, "syntax error. line: 2, column: 26 (unexpected literal: \"Из\")")
 	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Процедура rrrr() 
+				Для Каждого Стр Из ?(ТекущаяСтраница = Элементы.СтраницаДополнительныеРеквизиты,СписокРеквизитов,СписокРеквизитовОсновныеРеквизиты) Цикл
+					Стр.Пометка = Ложь;
+				КонецЦикла;
+		КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+		if assert.NoError(t, err) {
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, normalize(code), normalize(p))
+		}
+	})
 }
 
 func TestTryCatch(t *testing.T) {
