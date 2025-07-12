@@ -265,6 +265,8 @@ eos:
 		switch cl := t.currentLet(); {
 		case cl == EOL:
 			t.nextPos()
+
+			t.skipComment() // комментарии могут быть в тексте, в тексте запроса например
 			if cl = t.currentLet(); cl != '|' && !isSpace(cl) {
 				return "", fmt.Errorf("unexpected EOL")
 			}
