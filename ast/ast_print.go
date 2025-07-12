@@ -151,7 +151,7 @@ func (p *astPrint) printFunctionOrProcedure(pf *FunctionOrProcedure) (result str
 func (p *astPrint) printVarStatement(v Statement) string {
 	switch val := v.(type) {
 	case float64, float32:
-		return fmt.Sprintf("%.4f", val)
+		return fmt.Sprintf("%.0f", val)
 	case int, int64, int32:
 		return fmt.Sprintf("%d", val)
 	case string:
