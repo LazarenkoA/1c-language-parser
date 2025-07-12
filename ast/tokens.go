@@ -266,6 +266,7 @@ eos:
 		case cl == EOL:
 			t.nextPos()
 
+			t.skipSpace()
 			t.skipComment() // комментарии могут быть в тексте, в тексте запроса например
 			if cl = t.currentLet(); cl != '|' && !isSpace(cl) {
 				return "", fmt.Errorf("unexpected EOL")
@@ -281,8 +282,16 @@ eos:
 				ret = append(ret, '"', '"')
 				continue
 			}
-
 			t.nextPos()
+			t.skipSpace()
+
+			// для случаев (в 1с такое допускается, считается одна строка)
+			// d = "ввава"
+			// "fffff"
+			if t.currentLet() == '"' {
+				continue
+			}
+
 			break eos
 		default:
 			ret = append(ret, cl)

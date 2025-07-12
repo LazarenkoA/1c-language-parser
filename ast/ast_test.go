@@ -96,8 +96,70 @@ func TestParse3(t *testing.T) {
 	err := a.Parse()
 	if assert.NoError(t, err) && assert.NotNil(t, a.ModuleStatement.Body) {
 		p := a.Print(PrintConf{OneLine: true})
-		assert.Equal(t, "Процедура ПриЗаполненииОграниченияДоступа(Ограничение) Экспорт Ограничение.Текст = \"РазрешитьЧтениеИзменение\n\t|ГДЕ\n|\tЗначениеРазрешено(Организация)\n\t|\tИ ЗначениеРазрешено(ФизическоеЛицо)\";КонецПроцедуры", strings.TrimSpace(p))
+		assert.Equal(t, "Процедура ПриЗаполненииОграниченияДоступа(Ограничение) Экспорт Ограничение.Текст = \"РазрешитьЧтениеИзменение\n|ГДЕ\n|\tЗначениеРазрешено(Организация)\n|\tИ ЗначениеРазрешено(ФизическоеЛицо)\";КонецПроцедуры", strings.TrimSpace(p))
 	}
+}
+
+func TestParseString(t *testing.T) {
+	t.Run("test1", func(t *testing.T) {
+		code := `a = "rererer // rererer"`
+
+		a := NewAST(code)
+		err := a.Parse()
+		if assert.NoError(t, err) && assert.NotNil(t, a.ModuleStatement.Body) {
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, "a = \"rererer // rererer\";", strings.TrimSpace(p))
+		}
+	})
+	t.Run("test2", func(t *testing.T) {
+		code := `a = "rererer 
+| rererer
+// rererer
+| rererer"`
+
+		a := NewAST(code)
+		err := a.Parse()
+		if assert.NoError(t, err) && assert.NotNil(t, a.ModuleStatement.Body) {
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, "a = \"rererer \n| rererer\n| rererer\";", strings.TrimSpace(p))
+		}
+	})
+	t.Run("test3", func(t *testing.T) {
+		code := `a = "rererer 
+						| rererer
+						// rererer
+						| rererer"`
+
+		a := NewAST(code)
+		err := a.Parse()
+		if assert.NoError(t, err) && assert.NotNil(t, a.ModuleStatement.Body) {
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, "a = \"rererer \n| rererer\n| rererer\";", strings.TrimSpace(p))
+		}
+	})
+	t.Run("test4", func(t *testing.T) {
+		code := `a = "rererer"+ 
+						"rererer" + "rererer";`
+
+		a := NewAST(code)
+		err := a.Parse()
+		if assert.NoError(t, err) && assert.NotNil(t, a.ModuleStatement.Body) {
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, "a = \"rererer\" + \"rererer\" + \"rererer\";", strings.TrimSpace(p))
+		}
+	})
+	t.Run("test5", func(t *testing.T) {
+		code := `a = "123_"
+					"123_" 
+"123";`
+
+		a := NewAST(code)
+		err := a.Parse()
+		if assert.NoError(t, err) && assert.NotNil(t, a.ModuleStatement.Body) {
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, "a = \"123_123_123\";", strings.TrimSpace(p))
+		}
+	})
 }
 
 func TestParseModule(t *testing.T) {

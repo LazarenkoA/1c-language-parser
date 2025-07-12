@@ -199,9 +199,7 @@ func Test_Next(t *testing.T) {
 
 		token, err = tok.Next(ast)
 		assert.NoError(t, err)
-		assert.Equal(t, `тест 	тест
-				|ааа fd
-				| wqwq ww`, tok.literal)
+		assert.Equal(t, "тест 	тест\n|ааа fd\n| wqwq ww", tok.literal)
 		assert.Equal(t, token, String)
 	})
 
