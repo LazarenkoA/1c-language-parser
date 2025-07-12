@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -151,8 +150,10 @@ func (p *astPrint) printFunctionOrProcedure(pf *FunctionOrProcedure) (result str
 
 func (p *astPrint) printVarStatement(v Statement) string {
 	switch val := v.(type) {
-	case float64:
-		return strconv.FormatFloat(val, 'f', -1, 64)
+	case float64, float32:
+		return fmt.Sprintf("%.4f", val)
+	case int, int64, int32:
+		return fmt.Sprintf("%d", val)
 	case string:
 		return fmt.Sprintf("\"%s\"", val)
 	case bool:
