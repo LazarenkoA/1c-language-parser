@@ -198,6 +198,11 @@ func (e *ExpStatement) UnaryMinus() interface{} {
 	return e
 }
 
+func (e *ExpStatement) Not() interface{} {
+	e.not = true
+	return e
+}
+
 func (e ExprStatements) Not() interface{} {
 	e.not = true
 	return e

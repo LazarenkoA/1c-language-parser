@@ -658,6 +658,22 @@ func TestParseIF(t *testing.T) {
 		err := a.Parse()
 		assert.NoError(t, err)
 	})
+	t.Run("pass", func(t *testing.T) {
+		code := `Функция Команда1НаСервере()
+
+				Если Не ШаблонТекстаОшибки = "" Тогда
+
+				КонеЦесли;
+
+			 КонецФункции`
+
+		a := NewAST(code)
+		err := a.Parse()
+		if assert.NoError(t, err) {
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, "Функция Команда1НаСервере() Если Не (ШаблонТекстаОшибки = \"\") Тогда КонецЕсли;КонецФункции", strings.TrimSpace(p))
+		}
+	})
 }
 
 func TestParseLoop(t *testing.T) {
@@ -754,8 +770,7 @@ func TestParseLoop(t *testing.T) {
 
 		a := NewAST(code)
 		err := a.Parse()
-		assert.NoError(t, err)
-		if !t.Failed() {
+		if assert.NoError(t, err) {
 			p := a.Print(PrintConf{Margin: 0})
 			assert.Equal(t, "Процедура ПодключитьВнешнююОбработку() \nДля Каждого КлючЗначение Из Новый Структура(СписокКолонок) Цикл \nКонецЦикла;\nДля Каждого КлючЗначение Из Новый Структура(СписокКолонок2) Цикл \nКонецЦикла;\nКонецПроцедуры", deleteEmptyLine(p))
 		}
