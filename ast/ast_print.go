@@ -12,7 +12,7 @@ type PrintConf struct {
 	OneLine bool
 
 	// автоматически расставить скобки в выражениях
-	LispStyle bool
+	//LispStyle bool
 }
 
 type astPrint struct {
@@ -171,15 +171,15 @@ func (p *astPrint) printVarStatement(v Statement) string {
 	case VarStatement:
 		return val.Name
 	case ItemStatement:
-		return p.printVarStatement(val.Object) + "[" + p.printExpression(val.Item) + "]"
+		return p.printVarStatement(val.Object) + "[" + p.printExpression(val.Item, 0) + "]"
 	case TernaryStatement:
-		return fmt.Sprintf("?(%s, %s, %s)", p.printExpression(val.Expression), p.printExpression(val.TrueBlock), p.printExpression(val.ElseBlock))
+		return fmt.Sprintf("?(%s, %s, %s)", p.printExpression(val.Expression, 0), p.printExpression(val.TrueBlock, 0), p.printExpression(val.ElseBlock, 0))
 	case NewObjectStatement:
 		return fmt.Sprintf("Новый %s(%s)", val.Constructor, p.printParams(val.Param.Statements))
 	case AssignmentStatement:
-		return fmt.Sprintf("%s = %s", p.printVarStatement(val.Var), p.printExpression(val.Expr))
+		return fmt.Sprintf("%s = %s", p.printVarStatement(val.Var), p.printExpression(val.Expr, 0))
 	case ExpStatement, ExprStatements, *ExpStatement, *ExprStatements:
-		return p.printExpression(val)
+		return p.printExpression(val, 0)
 	default:
 		return ""
 	}
@@ -219,7 +219,7 @@ func (p *astPrint) printBodyItem(item Statement, depth int) string {
 		builder.WriteString(";")
 		builder.WriteString(p.newLine(1))
 	case *ExpStatement:
-		builder.WriteString(p.printExpression(v))
+		builder.WriteString(p.printExpression(v, 0))
 		builder.WriteString(";")
 	case *LoopStatement:
 		builder.WriteString(p.printLoopStatement(v, depth))
@@ -250,7 +250,7 @@ func (p *astPrint) printBodyItem(item Statement, depth int) string {
 		builder.WriteString("Возврат")
 		if v.Param != nil {
 			builder.WriteString(" ")
-			builder.WriteString(p.printExpression(v.Param))
+			builder.WriteString(p.printExpression(v.Param, 0))
 		}
 		builder.WriteString(";")
 	case GoToStatement, *GoToLabelStatement:
@@ -269,14 +269,14 @@ func (p *astPrint) printIfStatement(expr *IfStatement, depth int) string {
 
 	spaces := strings.Repeat(" ", p.conf.Margin*depth)
 	builder.WriteString("Если ")
-	builder.WriteString(p.printExpression(expr.Expression))
+	builder.WriteString(p.printExpression(expr.Expression, 0))
 	builder.WriteString(" Тогда ")
 
 	builder.WriteString(p.printBody(expr.TrueBlock, depth+1))
 	for _, item := range expr.IfElseBlock {
 		builder.WriteString(spaces)
 		builder.WriteString("ИначеЕсли ")
-		builder.WriteString(p.printExpression(item.(*IfStatement).Expression))
+		builder.WriteString(p.printExpression(item.(*IfStatement).Expression, 0))
 		builder.WriteString(" Тогда ")
 		builder.WriteString(p.printBody(item.(*IfStatement).TrueBlock, depth+1))
 	}
@@ -298,7 +298,7 @@ func (p *astPrint) printLoopStatement(loop *LoopStatement, depth int) string {
 	spaces := strings.Repeat(" ", p.conf.Margin*depth)
 	if loop.WhileExpr != nil {
 		builder.WriteString("Пока ")
-		builder.WriteString(p.printExpression(loop.WhileExpr))
+		builder.WriteString(p.printExpression(loop.WhileExpr, 0))
 		builder.WriteString(" Цикл ")
 	} else {
 		builder.WriteString("Для ")
@@ -308,13 +308,13 @@ func (p *astPrint) printLoopStatement(loop *LoopStatement, depth int) string {
 		builder.WriteString("Каждого ")
 		builder.WriteString(loop.For.(string))
 		builder.WriteString(" Из ")
-		builder.WriteString(p.printExpression(loop.In))
+		builder.WriteString(p.printExpression(loop.In, 0))
 		builder.WriteString(" Цикл ")
 	}
 	if loop.To != nil {
-		builder.WriteString(p.printExpression(loop.For))
+		builder.WriteString(p.printExpression(loop.For, 0))
 		builder.WriteString(" По ")
-		builder.WriteString(p.printExpression(loop.To))
+		builder.WriteString(p.printExpression(loop.To, 0))
 		builder.WriteString(" Цикл ")
 	}
 
@@ -325,7 +325,7 @@ func (p *astPrint) printLoopStatement(loop *LoopStatement, depth int) string {
 	return builder.String()
 }
 
-func (p *astPrint) printExpression(expr Statement) string {
+func (p *astPrint) printExpression(expr Statement, level int) string {
 	builder := &strings.Builder{}
 
 	switch v := expr.(type) {
@@ -336,14 +336,14 @@ func (p *astPrint) printExpression(expr Statement) string {
 		}
 
 		for _, s := range v.Statements {
-			builder.WriteString(p.printExpression(s))
+			builder.WriteString(p.printExpression(s, IF(level == 0, 0, level+1)))
 		}
 
 		if v.not {
 			builder.WriteString(")")
 		}
 	case *ExpStatement:
-		if p.conf.LispStyle {
+		if level > 0 {
 			builder.WriteString("(")
 		}
 
@@ -358,17 +358,17 @@ func (p *astPrint) printExpression(expr Statement) string {
 			builder.WriteString("(")
 		}
 
-		builder.WriteString(p.printExpression(v.Left))
+		builder.WriteString(p.printExpression(v.Left, level+1))
 		builder.WriteString(" ")
 		builder.WriteString(v.Operation.String())
 		builder.WriteString(" ")
-		builder.WriteString(p.printExpression(v.Right))
+		builder.WriteString(p.printExpression(v.Right, level+1))
 
 		if v.unaryMinus || v.not {
 			builder.WriteString(")")
 		}
 
-		if p.conf.LispStyle {
+		if level > 0 {
 			builder.WriteString(")")
 		}
 	case VarStatement:

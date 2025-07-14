@@ -18,8 +18,8 @@ func TestParse(t *testing.T) {
 	a := NewAST(code)
 	err := a.Parse()
 	if assert.NoError(t, err) {
-		p := a.Print(PrintConf{OneLine: true, LispStyle: true})
-		assert.Equal(t, "Процедура dsds() d = ((((864 / 63) + 607) - ((177 * 906) * 27)) > (((737 * 429) + 84) - 270));КонецПроцедуры", strings.TrimSpace(p))
+		p := a.Print(PrintConf{OneLine: true})
+		assert.Equal(t, "Процедура dsds() d = (((864 / 63) + 607) - ((177 * 906) * 27)) > (((737 * 429) + 84) - 270);КонецПроцедуры", strings.TrimSpace(p))
 	}
 }
 
@@ -145,7 +145,7 @@ func TestParseString(t *testing.T) {
 		err := a.Parse()
 		if assert.NoError(t, err) && assert.NotNil(t, a.ModuleStatement.Body) {
 			p := a.Print(PrintConf{OneLine: true})
-			assert.Equal(t, "a = \"rererer\" + \"rererer\" + \"rererer\";", strings.TrimSpace(p))
+			assert.Equal(t, "a = (\"rererer\" + \"rererer\") + \"rererer\";", strings.TrimSpace(p))
 		}
 	})
 	t.Run("test5", func(t *testing.T) {
@@ -1632,9 +1632,9 @@ func TestParseAST(t *testing.T) {
      стр = новый Структура("Цикл", 1);
      стр.Цикл = 0; 
 
-Если КодСимвола < 1040 ИЛИ КодСимвола > 1103 И КодыДопустимыхСимволов.Найти(КодСимвола) = Неопределено И Не (Не УчитыватьРазделителиСлов И ЭтоРазделительСлов(КодСимвола)) Тогда
-            Возврат ;
-        КонецЕсли;
+Если (КодСимвола < 1040) ИЛИ (((КодСимвола > 1103) И (КодыДопустимыхСимволов.Найти(КодСимвола) = Неопределено)) И Не ((Не УчитыватьРазделителиСлов И ЭтоРазделительСлов(КодСимвола)))) Тогда 
+        Возврат;
+    КонецЕсли;
 
 перейти ~метка;
 
@@ -1845,9 +1845,9 @@ func TestExpPriority(t *testing.T) {
 		a := NewAST(code)
 		err := a.Parse()
 		if assert.NoError(t, err) {
-			p := a.Print(PrintConf{Margin: 4, LispStyle: true})
+			p := a.Print(PrintConf{Margin: 4})
 			//fmt.Println(p)
-			assert.Equal(t, "А=(((d=2)=d)ИЛИ(в=3));Если(((1=1)=2)=3)ТогдаПриКомпоновкеРезультата();КонецЕсли;", normalize(p))
+			assert.Equal(t, "А=((d=2)=d)ИЛИ(в=3);Если((1=1)=2)=3ТогдаПриКомпоновкеРезультата();КонецЕсли;", normalize(p))
 		}
 	})
 	t.Run("test2", func(t *testing.T) {
@@ -1861,8 +1861,8 @@ func TestExpPriority(t *testing.T) {
 		err := a.Parse()
 
 		if assert.NoError(t, err) {
-			p := a.Print(PrintConf{Margin: 4, LispStyle: true})
-			assert.Equal(t, "ПроцедураОткрытьНавигационнуюСсылку(НавигационнаяСсылка,ЗначОповещение=Неопределено)ЭкспортЕсли((((в=1)=5)ИНеавав)ИЛИааа)Тогдав=((((1=5)=1)ИНеавав)ИЛИааа);КонецЕсли;КонецПроцедуры", normalize(p))
+			p := a.Print(PrintConf{Margin: 4})
+			assert.Equal(t, "ПроцедураОткрытьНавигационнуюСсылку(НавигационнаяСсылка,ЗначОповещение=Неопределено)ЭкспортЕсли(((в=1)=5)ИНеавав)ИЛИаааТогдав=(((1=5)=1)ИНеавав)ИЛИааа;КонецЕсли;КонецПроцедуры", normalize(p))
 		}
 	})
 	t.Run("test3", func(t *testing.T) {
@@ -1875,8 +1875,22 @@ func TestExpPriority(t *testing.T) {
 		err := a.Parse()
 
 		if assert.NoError(t, err) {
-			p := a.Print(PrintConf{OneLine: true, LispStyle: true})
-			assert.Equal(t, "Процедура f() тест.куку.ууу = ((((1 = 5) = 1) И Не авав) ИЛИ ааа);тест[333] = ((((1 = 5) = 1) = 4) = fd);КонецПроцедуры", strings.TrimSpace(p))
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, "Процедура f() тест.куку.ууу = (((1 = 5) = 1) И Не авав) ИЛИ ааа;тест[333] = (((1 = 5) = 1) = 4) = fd;КонецПроцедуры", strings.TrimSpace(p))
+		}
+	})
+	t.Run("test4", func(t *testing.T) {
+		code := `Процедура f()
+					ds = r / (КонВремя - НачВремя);
+					fd = Формат(r / (КонВремя - НачВремя), "ЧН=; ЧГ=");
+				КонецПроцедуры`
+
+		a := NewAST(code)
+		err := a.Parse()
+
+		if assert.NoError(t, err) {
+			p := a.Print(PrintConf{OneLine: true})
+			assert.Equal(t, "Процедура f() ds = r / (КонВремя - НачВремя);fd = Формат(r / (КонВремя - НачВремя), \"ЧН=; ЧГ=\");КонецПроцедуры", strings.TrimSpace(p))
 		}
 	})
 }
